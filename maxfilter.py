@@ -26,5 +26,5 @@ apply_maxfilter(in_fname=in_name,
                 # cal='/projects/MINDLAB2013_18-MEG-HypnosisAnarchicHand/misc/sss_cal.dat',
                 # ctc='/projects/MINDLAB2013_18-MEG-HypnosisAnarchicHand/misc/ct_sparse.fif',
                 overwrite=True,
-                mx_args=' -v | tee %s' % tsss_mc.log,
+                mx_args=' -v | tee %s' % tsss_mc_log,
                 )
