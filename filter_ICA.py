@@ -23,8 +23,7 @@ if hostname == "Wintermute":
                "hyp_tone_task-tsss-mc-autobad.fif"
     n_jobs = 1
 else:
-    data_path = "/projects/" + \
-                "/projects/MINDLAB2015_MEG-Gambling/scratch"
+    data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch"
     n_jobs = 1
 
 raw = Raw(data_path + "p_01_eyes_closed_open_tsss-mc_autobad_raw.fif")
