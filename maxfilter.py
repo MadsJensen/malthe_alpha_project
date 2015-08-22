@@ -2,15 +2,15 @@ from mne.preprocessing.maxfilter import apply_maxfilter
 import os
 
 # change data files dir
-os.chdir('/projects/MINDLAB2015_MEG-Gambling/scratch')
+os.chdir('/projects/MINDLAB2015_MEG-Gambling/scratch/')
 #
 #
 
 # file and log names
-in_name = "p_01_eyes_closed_open.fif"
-out_name = "p_01_eyes_closed_open_tsss-mc_autobad_raw.fif"
-tsss_mc_log = "p_01_eyes_closed_open_tsss-mc_autobad_raw.log"
-headpos_log = "p_01_eyes_closed_open_tsss-mc_autobad_headpos.log"
+in_name = "p_01_data.fif"
+out_name = "p_01_data_tsss-mc_autobad_raw.fif"
+tsss_mc_log = "p_01_data_tsss-mc_autobad_raw.log"
+headpos_log = "p_01_data_tsss-mc_autobad_headpos.log"
 
 # call to maxfilter
 apply_maxfilter(in_fname=in_name,
