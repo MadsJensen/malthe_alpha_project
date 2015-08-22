@@ -24,17 +24,17 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch"
-    n_jobs = 1
+    n_jobs = 3
 
-raw = Raw(data_path + "p_01_eyes_closed_open_tsss-mc_autobad_raw.fif")
+
+raw = Raw(data_path + "p_01_data.fif", preload=True)
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12  # T (magnetometers)
-              #   eeg=2
-              #  eog=250e-6  # uV (EOG channels)
-              )
+              mag=4e-12,  # T (magnetometers)
+              eeg=180e-6 # )
 
-raw.filter(None, 35, n_jobs=n_jobs)
+raw.resample(200, n_jobs=n_jobs)
+raw.filter(None, 30, n_jobs=n_jobs)
 
 # ICA Part
 ica = ICA(n_components=0.95, method='fastica')
@@ -107,4 +107,4 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save(data_path + "p_01_eyes_tsss_mc_autobad_ica_raw.fif")
+raw_ica.save(data_path + "p_01_data_ica_filter_resample_tsss_raw.fif")
