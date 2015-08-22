@@ -7,8 +7,8 @@
 
 # The subjects and sessions to be used
 subjects=(\
-    '0003_WVZ_copy' \
-    '0003_WVZ' \
+    'p_01' \
+
 )
 
 
@@ -16,14 +16,14 @@ nsubjects=${#subjects[*]}
 lastsubj=`expr $nsubjects - 1`
 ## Processing
 
-for m in `seq 0 $lastsubj` 
+for m in `seq 0 $lastsubj`
 do
   echo " "
   echo " Making BEM solution for SUBJECT:  ${subjects[m]}"
   echo " "
-  
+
   mne_watershed_bem --subject ${subjects[m]} --overwrite
-  
+
   ln -sf $SUBJECTS_DIR/${subjects[m]}/bem/watershed/${subjects[m]}_inner_skull_surface $SUBJECTS_DIR/${subjects[m]}/bem/${subjects[m]}-inner_skull.surf
   ln -sf $SUBJECTS_DIR/${subjects[m]}/bem/watershed/${subjects[m]}_outer_skull_surface $SUBJECTS_DIR/${subjects[m]}/bem/${subjects[m]}-outer_skull.surf
   ln -sf $SUBJECTS_DIR/${subjects[m]}/bem/watershed/${subjects[m]}_outer_skin_surface  $SUBJECTS_DIR/${subjects[m]}/bem/${subjects[m]}-outer_skin.surf
@@ -32,7 +32,7 @@ do
   echo " "
   echo " Setting up forward model for  SUBJECT:  ${subjects[m]}"
   echo " "
-  
+
 
 
 done # subjects
