@@ -47,7 +47,6 @@ event_id = {'entrainment': 1,
             'right': 8}
 
 #   Setup for reading the raw data
-raw = io.Raw(raw_fname)
 events = mne.find_events(raw)
 
 #   Plot raw data
