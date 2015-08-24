@@ -40,7 +40,7 @@ ica = ICA(n_components=0.95, method='fastica')
 picks = mne.pick_types(raw.info, meg=True, eeg=True, eog=False,
                        stim=False, exclude='bads')
 
-ica.fit(raw, picks=picks, decim=3, reject=reject)
+ica.fit(raw, picks=picks, reject=reject)
 
 # maximum number of components to reject
 n_max_ecg, n_max_eog = 3, 1
