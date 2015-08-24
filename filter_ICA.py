@@ -21,18 +21,18 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch"
-    n_jobs = 3
+    n_jobs = 1
 
 
-raw = Raw(data_path + "/p_01_data_resampl_lp_raw_tsss.fif", preload=True)
+raw = Raw(data_path + "/p_01_data_resample_raw_tsss.fif", preload=True)
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12,  # T (magnetometers)
-              eeg=180e-6 #
+              mag=4e-12  # T (magnetometers)
+            #   eeg=180e-6 #
               )
 
 # raw.resample(200, n_jobs=n_jobs)
-# raw.filter(None, 30, n_jobs=n_jobs)
+raw.filter(None, 30, n_jobs=n_jobs)
 
 # ICA Part
 ica = ICA(n_components=0.95, method='fastica')
