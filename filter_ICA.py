@@ -17,14 +17,14 @@ from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/Hyp_meg/scratch/Tone_task_MNE/"
+    data_path = "/home/mje/mnt/Malthe_proj/scratch/"
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch"
     n_jobs = 1
 
 
-raw = Raw(data_path + "/p_01_data_resample_raw_tsss.fif", preload=True)
+raw = Raw(data_path + "/p_02_resample_raw_tsss.fif", preload=True)
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
               mag=4e-12  # T (magnetometers)
@@ -105,4 +105,4 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save(data_path + "p_01_data_ica_filter_resample_tsss_raw.fif")
+raw_ica.save(data_path + "p_02_ica_filter_resample_raw_tsss.fif")
