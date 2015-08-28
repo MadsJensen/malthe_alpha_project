@@ -16,6 +16,7 @@ data and then saved to disk.
 
 import mne
 from mne.viz import iter_topography
+from mne.connectivity import spectral_connectivity
 
 import socket
 
@@ -45,14 +46,28 @@ reject = dict(grad=4000e-13,  # T / m (gradiometers)
 tmin, tmax = 0.7, 2.5
 baseline = (0.7, 0.95)
 
+
 # Select events to extract epochs from.
-event_id = {'entrainment': 1,
-            'Control': 2,
-            'left': 4,
-            'right': 8}
+event_id = {'ent_L': 10,
+            'ent_R': 11,
+            'ctl_R': 21,
+            'ctl_L': 20}
 
 #   Setup for reading the raw data
 events = mne.find_events(raw)
+
+tmp_eve = events.copy()
+
+for j in range(len(tmp_eve)):
+    if tmp_eve[j, 2] == 1 and tmp_eve[j+1, 2] == 4:
+        tmp_eve[j, 2] = 10
+    elif tmp_eve[j, 2] == 1 and tmp_eve[j+1, 2] == 8:
+        tmp_eve[j, 2] = 11
+    elif tmp_eve[j, 2] == 2 and tmp_eve[j+1, 2] == 4:
+        tmp_eve[j, 2] = 20
+    elif tmp_eve[j, 2] == 2 and tmp_eve[j+1, 2] == 8:
+        tmp_eve[j, 2] = 21
+
 
 #   Plot raw data
 # fig = raw.plot(events=events)
@@ -65,7 +80,7 @@ include = []  # or stim channels ['STI 014']
 picks = mne.pick_types(raw.info, meg=True, eeg=False, stim=False, eog=False,
                        include=include, exclude='bads')
 # Read epochs
-epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
+epochs = mne.Epochs(raw, tmp_eve, event_id, tmin, tmax, picks=picks,
                     baseline=(0.7, 0.95), reject=reject,
                     preload=True)
 
@@ -115,107 +130,156 @@ epochs["entrainment"]
 
 # In[30]:
 
-freqs = np.arange(6, 20, 1)  # define frequencies of interest
+freqs = np.arange(6, 30, 1)  # define frequencies of interest
 n_cycles = freqs / 2.  # different number of cycle per frequency
-power_clt, itc_ctl = mne.time_frequency.tfr_morlet(epochs["Control"],
-                                                   freqs=freqs,
-                                                   n_cycles=n_cycles,
-                                                   use_fft=True,
-                                                   return_itc=True,
-                                                   decim=1,
-                                                   n_jobs=1)
-power_ent, itc_ent = mne.time_frequency.tfr_morlet(epochs["entrainment"],
-                                                   freqs=freqs,
-                                                   n_cycles=n_cycles,
-                                                   use_fft=True,
-                                                   return_itc=True,
-                                                   decim=1,
-                                                   n_jobs=1)
+power_ent_L, itc_ent_L = mne.time_frequency.tfr_morlet(epochs["ent_L"],
+                                                       freqs=freqs,
+                                                       n_cycles=n_cycles,
+                                                       use_fft=True,
+                                                       return_itc=True,
+                                                       decim=1,
+                                                       n_jobs=n_jobs)
+power_ent_R, itc_ent_R = mne.time_frequency.tfr_morlet(epochs["ent_R"],
+                                                       freqs=freqs,
+                                                       n_cycles=n_cycles,
+                                                       use_fft=True,
+                                                       return_itc=True,
+                                                       decim=1,
+                                                       n_jobs=n_jobs)
+
+power_ctl_L, itc_ctl_L = mne.time_frequency.tfr_morlet(epochs["ctl_l"],
+                                                       freqs=freqs,
+                                                       n_cycles=n_cycles,
+                                                       use_fft=True,
+                                                       return_itc=True,
+                                                       decim=1,
+                                                       n_jobs=n_jobs)
+power_ctl_R, itc_ctl_R = mne.time_frequency.tfr_morlet(epochs["ctl_R"],
+                                                       freqs=freqs,
+                                                       n_cycles=n_cycles,
+                                                       use_fft=True,
+                                                       return_itc=True,
+                                                       decim=1,
+                                                       n_jobs=n_jobs)
 
 
 # In[27]:
 
-power_clt.plot_topo(baseline=baseline, mode='logratio',
-                    title='Average power: Control')
-power_ent.plot_topo(baseline=baseline, mode='logratio',
-                    title='Average power: Entraiment')
+power_ent_L.plot_topo(baseline=baseline, mode='logratio',
+                    title='Average power: ent_L')
+power_ent_R.plot_topo(baseline=baseline, mode='logratio',
+                    title='Average power: ent_R')
+                    
+power_ctl_L.plot_topo(baseline=baseline, mode='logratio',
+                      title='Average power: ctl_L')
+power_ctl_R.plot_topo(baseline=baseline, mode='logratio',
+                      title='Average power: ctl_R')
 
+
+
+itc_ent_L.plot_topo(baseline=baseline, mode='logratio',
+                    title='ITC: ent_L')
+itc_ent_R.plot_topo(baseline=baseline, mode='logratio',
+                    title='ITC: ent_R')
+                    
+itc_ctl_L.plot_topo(baseline=baseline, mode='logratio',
+                      title='ITC: ctl_L')
+itc_ctl_R.plot_topo(baseline=baseline, mode='logratio',
+                      title='ITC: ctl_R')
 # In[31]:
 
 
 
 #### Power ####
-power_clt.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='Power Control: Alpha',
-                     cmap="RdBu_r")
+power_ctl_L.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, grads: ctl_L')
 #                     vmin=0, vmax=5)
-power_ent.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='Entrain: Alpha',
-                     cmap="RdBu_r")
+power_ent_L.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, grads: ent_L')
 
-power_clt.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='power Control: Alpha, Mags',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
+power_ctl_R.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, grads: Ctl_R')
+#                     vmin=0, vmax=5)
+power_ent_R.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, grads: ent_R')
 
-power_ent.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='power Entrain: Alpha, mags',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
 
-# grads                     
-power_clt.plot_topomap(ch_type='grad', tmin=0, tmax=0.5, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='power Control: Alpha, grads',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
 
-power_ent.plot_topomap(ch_type='grad', tmin=0, tmax=0.5, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='power Entrain: Alpha, grads',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
+power_ctl_L.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, mags: ctl_L')
+#                     vmin=0, vmax=5)
+power_ent_L.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, mags: ent_L')
+
+power_ctl_R.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, mags: ctl_R')
+#                     vmin=0, vmax=5)
+power_ent_R.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='logratio',
+                     title='Power Alpha, mags: ent_R')
 
 
 
 #### ITC ####
-itc_ctl.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='logratio',
-                     title='Control: Alpha')
+itc_ctl_L.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, grads: ctl_L')
 #                     vmin=0, vmax=5)
-itc_ent.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='logratio',
-                     title='Entrain: Alpha')
-
-
-itc_ctl.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+itc_ent_L.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
                      baseline=baseline, mode='zscore',
-                     title='ITC Control: Alpha, Mags',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=20)
+                     title='ITC Alpha, grads: ent_L')
 
-itc_ent.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+itc_ctl_R.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
                      baseline=baseline, mode='zscore',
-                     title='ITC Entrain: Alpha, mags',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=20)
-# grads                     
-itc_ctl.plot_topomap(ch_type='grad', tmin=0.7, tmax=2, fmin=8, fmax=12,
+                     title='ITC Alpha, grads: ctl_R')
+#                     vmin=0, vmax=5)
+itc_ent_R.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
                      baseline=baseline, mode='zscore',
-                     title='ITC Control: Alpha, grads',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
+                     title='ITC Alpha, grads: ent_R')
 
-itc_ent.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
-                     baseline=baseline, mode='zscore',
-                     title='ITC Entrain: Alpha, grads',
-                     cmap="RdBu_r",
-                     vmin=None, vmax=None)
 
+
+itc_ctl_L.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, mags: ctl_L')
+
+#                     vmin=0, vmax=5)
+itc_ent_L.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, mags: ent_L')
+
+itc_ctl_R.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, mags: ctl_R')
+#                     vmin=0, vmax=5)
+itc_ent_R.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, mags: ent_R')
+
+
+
+
+#### Diff plots ####
+itc_diff_L.plot_topomap(ch_type='mag', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, mags: diff')
+
+itc_diff_L.plot_topomap(ch_type='grad', tmin=1, tmax=2, fmin=8, fmax=12,
+                     baseline=baseline, mode='zscore',
+                     title='ITC Alpha, grad: diff')
+
+itc_diff_L.plot_topo(baseline=baseline, mode='zscore',
+                    title='ITC: diff_L')
+
+itc_diff_R.plot_topo(baseline=baseline, mode='zscore',
+                    title='ITC: diff_R')
 
 # In[39]:
 
@@ -228,13 +292,28 @@ print power_ent.data.max()
 epochs.ch_names[-10]
 
 
-# In[45]:
+fmin, fmax = 8., 13.
+sfreq = epochs.info['sfreq']  # the sampling frequency
+tmin = 0.0  # exclude the baseline period
 
-itc_ctl.plot([-12], baseline=baseline, mode='zscore',
-             title='ITC: Ctl', vmin=0., vmax=None, cmap='RdBu_r')
-itc_ent.plot([-12], baseline=baseline, mode='zscore',
-             title='ITC: Ent', vmin=0., vmax=None, cmap='RdBu_r')
+conditions = ["ent_L", "ent_R", "ctl_L", "ctl_R"]
+#conditions = ["ent_L"]
+plv_results = {}
 
+for cond in conditions:
+    con, freqs, times, n_epochs, n_tapers = spectral_connectivity(
+        epochs[cond], method='plv', 
+        mode='multitaper', 
+        sfreq=sfreq,
+        fmin=fmin, fmax=fmax,
+        faverage=True,
+        tmin=1, tmax=2,
+        mt_adaptive=False,
+        n_jobs=1)
+    
+    res = {"con": con, "freqs": freqs, "times": times,
+           "n_epochs": n_epochs, "n_tapers": n_tapers}
+    plv_results.update({cond: res})
 
 
 
