@@ -8,7 +8,6 @@
 # The subjects and sessions to be used
 subjects=(\
     'p_01' \
-
 )
 
 
