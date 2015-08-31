@@ -25,16 +25,16 @@ elif hostname == "isis":
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
-
+raw_fname = data_path + "p_01_data_ica_filter_resample_tsss_raw.fif"
 trans = data_path + "p_01-trans.fif"
-src = data_path + 'p_01-oct-6-src.fif'
-bem = data_path + '/subjects/sample/bem/sample-5120-5120-5120-bem-sol.fif'
-subjects_dir = data_path + '/subjects'
+src = subjects_dir + 'p_01/bem/p_01-oct-6-src.fif'
+bem = subjects_dir + 'p_01/bem/p_01-5120-5120-5120-bem-sol.fif'
+subjects_dir = subjects_dir
 
 # Note that forward solutions can also be read with read_forward_solution
 fwd = mne.make_forward_solution(raw_fname, trans, src, bem,
-                                fname=None, meg=True, eeg=True, mindist=5.0,
-                                n_jobs=2, overwrite=True)
+                                fname="p_01-fwd.fif", meg=True, eeg=True, mindist=5.0,
+                                n_jobs=n_jobs, overwrite=True)
 
 # convert to surface orientation for better visualization
 fwd = mne.convert_forward_solution(fwd, surf_ori=True)
@@ -66,3 +66,18 @@ plt.show()
 plt.figure()
 plt.hist([grad_map.data.ravel(), mag_map.data.ravel(), eeg_map.data.ravel()],
          bins=20, label=['Gradiometers', 'Magnetometers', 'EEG'],
+         color=['c', 'b', 'k'])
+plt.legend()
+plt.title('Normal orientation sensitivity')
+plt.xlabel('sensitivity')
+plt.ylabel('count')
+plt.show()
+
+
+grad_map.plot(time_label='Gradiometer sensitivity', subjects_dir=subjects_dir,
+              clim=dict(lims=[0, 50, 100]))
+mag_map.plot(time_label='MAG sensitivity', subjects_dir=subjects_dir,
+              clim=dict(lims=[0, 50, 100]))
+eeg_map.plot(time_label='EEG sensitivity', subjects_dir=subjects_dir,
+              clim=dict(lims=[0, 50, 100]))
+              
