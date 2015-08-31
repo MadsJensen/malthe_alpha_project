@@ -15,7 +15,6 @@ from mne.stats import permutation_cluster_test
 
 ###############################################################################
 # Set parameters
-data_path = sample.data_path()
 raw_fname = data_path + '/MEG/sample/sample_audvis_raw.fif'
 event_fname = data_path + '/MEG/sample/sample_audvis_raw-eve.fif'
 event_id = 1
@@ -27,10 +26,10 @@ tmax = 2
 ch_name = foo.info['ch_names'][220]
 
 # Load condition 1
-data_condition_1 = foo["ctl_L"].get_data()  # as 3D matrix
+data_condition_1 = foo["ctl_L", "ctl_R"].get_data()  # as 3D matrix
 data_condition_1 *= 1e13  # change unit to fT / cm
 
-data_condition_2= foo["ent_L"].get_data()  # as 3D matrix
+data_condition_2= foo["ent_L", "ent_R"].get_data()  # as 3D matrix
 data_condition_2 *= 1e13  # change unit to fT / cm
 
 
@@ -47,9 +46,9 @@ times = 1e3 * foo.times  # change unit to ms
 # operations such as nonparametric statistics) if you don't need high
 # spectrotemporal resolution.
 decim = 1
-frequencies = np.arange(7, 16, 1)  # define frequencies of interest
+frequencies = np.arange(8, 13, 1)  # define frequencies of interest
 sfreq = foo.info['sfreq']  # sampling in Hz
-n_cycles = 1.5
+n_cycles = frequencies / 2.
 
 foo_power_1 = single_trial_power(data_condition_1, sfreq=sfreq,
                                  frequencies=frequencies,
@@ -72,10 +71,10 @@ foo_power_2 /= foo_baseline_2[..., np.newaxis]
 
 ###############################################################################
 # Compute statistic
-threshold = 6
+threshold = 4
 T_obs, clusters, cluster_p_values, H0 = \
     permutation_cluster_test([foo_power_1, foo_power_2],
-                             n_permutations=2000, threshold=threshold, tail=0)
+                             n_permutations=5000, threshold=threshold, tail=0)
 
 ###############################################################################
 # View time-frequency plots
