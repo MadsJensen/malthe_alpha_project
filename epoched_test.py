@@ -33,6 +33,8 @@ elif hostname == "isis":
     n_jobs = 3
 
 
+subjects_dir = data_path + "fs_subjects_dir/"
+
 raw = mne.io.Raw(data_path + "p_01_data_ica_filter_resample_tsss_raw.fif",
           preload=False)
 
