@@ -30,7 +30,7 @@ fname_inv = data_path + 'p_01-meg-oct-6-inv.fif'
 fname_epochs = data_path + 'p_01_ica_filter_ds_tsss-epo.fif'
 
 
-labels = mne.read_labels_from_annot('p_01', parc='PALS_B12_lobes',
+labels = mne.read_labels_from_annot('p_01', parc='PALS_B12_Lobes',
                                     # regexp="Bro",
                                     subjects_dir=subjects_dir)
 
@@ -66,49 +66,52 @@ frequencies = np.arange(7, 16, 1)  # define frequencies of interest
 n_cycles = frequencies / 3.  # different number of cycle per frequency
 
 # subtract the evoked response in order to exclude evoked activity
-epochs_induced = epochs["ctl_L", "ctl_R"].copy().subtract_evoked()
 
 # plt.close('all')
 for cond in epochs.event_id.keys():
-    for ii, (this_epochs, title) in enumerate(zip([epochs["ent_L", "ent_R"],
-                                                   epochs_induced],
-                                                  ['evoked + induced',
-                                                   'induced only'])):
-        # compute the source space power and phase lock
-        power, phase_lock = source_induced_power(
-            this_epochs, inverse_operator, frequencies, labels_occ[0],
-            baseline=(0.7, 0.95),
-            baseline_mode='zscore', n_cycles=n_cycles, n_jobs=n_jobs)
-
-        power = np.mean(power, axis=0)  # average over sources
-        phase_lock = np.mean(phase_lock, axis=0)  # average over sources
-        times = epochs.times
-
-        #######################################################################
-        # View time-frequency plots
-        plt.subplots_adjust(0.1, 0.08, 0.96, 0.94, 0.2, 0.43)
-        plt.subplot(2, 2, 2 * ii + 1)
-        plt.imshow(20 * power,
-                   extent=[times[60], times[220],
-                           frequencies[0], frequencies[-1]],
-                   aspect='auto', origin='lower', cmap='RdBu_r')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Frequency (Hz)')
-        plt.title('Power (%s), condition: %s' % (title, cond))
-        plt.colorbar()
-
-        plt.subplot(2, 2, 2 * ii + 2)
-        plt.imshow(phase_lock,
-                   extent=[times[60], times[260],
-                           frequencies[0], frequencies[-1]],
-                   aspect='auto', origin='lower',
-                   cmap='RdBu_r')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Frequency (Hz)')
-        plt.title('Phase-lock (%s)' % title)
-        plt.colorbar()
-
-    plt.show()
+    for label in labels_occ:
+        plt.figure()
+        epochs_induced = epochs[cond].copy().subtract_evoked()
+        for ii, (this_epochs, title) in enumerate(zip([epochs["ent_L", "ent_R"],
+                                                       epochs_induced],
+                                                      ['evoked + induced',
+                                                       'induced only'])):
+            # compute the source space power and phase lock
+            power, phase_lock = source_induced_power(
+                this_epochs, inverse_operator, frequencies, label,
+                baseline=(0.7, 0.95),
+                baseline_mode='zscore', n_cycles=n_cycles, n_jobs=n_jobs)
+    
+            power = np.mean(power, axis=0)  # average over sources
+            phase_lock = np.mean(phase_lock, axis=0)  # average over sources
+            times = epochs.times
+    
+            #######################################################################
+            # View time-frequency plots
+            plt.subplots_adjust(0.1, 0.08, 0.96, 0.94, 0.2, 0.43)
+            plt.subplot(2, 2, 2 * ii + 1)
+            plt.imshow(20 * power,
+                       extent=[times[60], times[220],
+                               frequencies[0], frequencies[-1]],
+                       aspect='auto', origin='lower', cmap='RdBu_r')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Frequency (Hz)')
+            plt.title('Power (%s), condition: %s' % (title, cond))
+            plt.colorbar()
+    
+            plt.subplot(2, 2, 2 * ii + 2)
+            plt.imshow(phase_lock,
+                       extent=[times[60], times[260],
+                               frequencies[0], frequencies[-1]],
+                       aspect='auto', origin='lower',
+                       cmap='RdBu_r')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Frequency (Hz)')
+            plt.title('Phase-lock (%s), cond: %s, label: %s'
+                       % (title, cond, label.name)
+            plt.colorbar()
+    
+            plt.show()
 
 
 bands = dict(alpha=[8, 12])
@@ -120,7 +123,7 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
                                          bands=bands,
                                          label=label,
                                          lambda2=lambda2,
-                                         method="dSPM",
+                                         method="MNE",
                                          baseline=(0.7, 0.95),
                                          baseline_mode='zscore',
                                          pca=True)
@@ -128,15 +131,19 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
         exec("BP_%s = stcs['alpha']" % cond)
 
     plt.figure()
-    plt.plot(BP_ent_L.times, BP_ent_L.data.mean(axis=0), 'b',
+    plt.plot(BP_ent_L.times, np.mean([stc.data.mean(axis=0) 
+                                    for stc in stcs_ent_L], axis=0), 'b',
              linewidth=2, label="ent_L")
-    plt.plot(BP_ent_R.times, BP_ent_R.data.mean(axis=0), 'k',
+    plt.plot(BP_ent_R.times, np.mean([stc.data.mean(axis=0)
+                                     for stc in stcs_ent_R], axis=0), 'k',
              linewidth=2, label="ent_R")
-    plt.plot(BP_ctl_L.times, BP_ctl_L.data.mean(axis=0), 'r',
+    plt.plot(BP_ctl_L.times, np.mean([stc.data.mean(axis=0)
+                                     for stc in stcs_ctl_L], axis=0), 'r',
              linewidth=2, label="ctl_L")
-    plt.plot(BP_ctl_R.times, BP_ctl_R.data.mean(axis=0), 'g',
+    plt.plot(BP_ctl_R.times, np.mean([stc.data.mean(axis=0)
+                                     for stc in stcs_ctl_R], axis=0), 'g',
              linewidth=2, label="ctl_R")
-
+             
     plt.legend()
     plt.title("label: %s" % label.name)
     plt.ylabel("zscore")
