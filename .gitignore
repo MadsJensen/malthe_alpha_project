@@ -58,3 +58,6 @@ target/
 
 # test
 logs
+
+# emacs
+*~
