@@ -66,9 +66,10 @@ for sub in included_subjects:
     # matches sequence_name
         for serie in series:
             if sequence_name in ser:
-                file_names = db.get_files(sub, MEG_study, 'MEG', series[1][1:])
+                file_names = db.get_files(sub, MEG_study, 'MEG', series[1][1])
 
                 in_name = "sub_%d_%s-raw.fif" % (sub, session)
                 out_name = "sub_%d_%s-tsss-mc-autobad_ver_4.fif" % (sub, session)
                 tsss_mc_log = "sub_%d_%s-tsss-mc-autobad_ver_4.log" % (sub, session)
                 headpos_log = "sub_%d_%s-headpos_ver_4.log" % (sub, session)
+
