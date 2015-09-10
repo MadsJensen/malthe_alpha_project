@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 """
-Created on Wed Oct  8 14:45:02 2014
+Created on Wed Oct  8 14:45:02 2014.
 
 @author: mje
 """
@@ -17,33 +17,35 @@ from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/Malthe_proj/scratch/"
+    data_path = "/home/mje/mnt/caa/scratch/"
     n_jobs = 1
 else:
-    data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch"
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
     n_jobs = 1
 
 
-raw = Raw(data_path + "/p_02_resample_raw_tsss.fif", preload=True)
+raw = Raw(data_path + "0001_p_03_ds-raw_tsss_mc_TEST.fif", preload=True)
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
               mag=4e-12  # T (magnetometers)
-            #   eeg=180e-6 #
+              # eeg=180e-6 #
               )
 
 # raw.resample(200, n_jobs=n_jobs)
-raw.filter(None, 30, n_jobs=n_jobs)
+# raw.filter(None, 30, n_jobs=n_jobs)
+# raw.resample(250, n_jobs=3)
+
 
 # ICA Part
 ica = ICA(n_components=0.95, method='fastica')
 
-picks = mne.pick_types(raw.info, meg=True, eeg=True, eog=False,
+picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True, ecg=True,
                        stim=False, exclude='bads')
 
 ica.fit(raw, picks=picks, reject=reject)
 
 # maximum number of components to reject
-n_max_ecg, n_max_eog = 3, 1
+n_max_ecg, n_max_eog = 3, 2
 
 ##########################################################################
 # 2) identify bad components by analyzing latent sources.
@@ -105,4 +107,5 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save(data_path + "p_02_ica_filter_resample_raw_tsss.fif")
+raw_ica.save(data_path + "0001_p_03_filter_resample_ica-raw_tsss_mc.fif")
+ 
