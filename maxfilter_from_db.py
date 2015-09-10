@@ -46,14 +46,14 @@ proj_code = "MINDLAB2015_MEG-Gambling"
 
 db = Query(proj_code)
 proj_folder = os.path.join('/projects', proj_code)
-scratch_folder = os.path.join(proj_folder, 'scratch')
+scratch_folder = os.path.join(proj_folder, 'scratch/')
 
 subjects_dir = os.path.join(scratch_folder, 'fs_subjects_dir')
 script_dir = proj_folder + '/scripts/'
 
 included_subjects = db.get_subjects()
 # just test with first one!
-included_subjects = [included_subjects[0]]
+included_subjects = [included_subjects[-1]]
 
 for sub in included_subjects:
     # this is an example of getting the DICOM files as a list
@@ -65,12 +65,33 @@ for sub in included_subjects:
     # Change this to be more elegant: check whether any item in series
     # matches sequence_name
         for serie in series:
-            file_names = db.get_files(sub, MEG_study, 'MEG', serie[1])
-            out_name = sub[:4] + serie[0] + "raw-tsss-mc.fif"
+            in_name = db.get_files(sub, MEG_study, 'MEG', serie[1])
+            out_name = "%s_%s-raw-tsss-mc_TEST.fif" % (sub[:4], serie[0])
             print(out_name)
-
-                in_name = "sub_%d_%s-raw.fif" % (sub, session)
-                out_name = "sub_%d_%s-tsss-mc-autobad_ver_4.fif" % (sub, session)
-                tsss_mc_log = "sub_%d_%s-tsss-mc-autobad_ver_4.log" % (sub, session)
-                headpos_log = "sub_%d_%s-headpos_ver_4.log" % (sub, session)
-
+            
+            tsss_mc_log = out_name[:-3] + "log"
+            headpos_log = out_name[:-4] + "_hp.log"
+            
+            if len(in_name) > 1:
+                for j, in_file in enumerate(in_name):
+                    if j == 0:
+                        out_name = out_name
+                    else:
+                        out_name = scratch_folder\
+                                    + out_name[:-4] + "-%d.fif" % j
+                        
+                    apply_maxfilter(in_fname=in_file,
+                                    out_fname=out_name,
+                                    frame='head',
+                                    # origin= "0 0 40",
+                                    autobad="on",
+                                    st=True,
+                                    st_buflen=30,
+                                    st_corr=0.95,
+                                    mv_comp=True,
+                                    mv_hp=headpos_log,
+                                    # cal=cal,
+                                    # ctc=ctc,
+                                    overwrite=True,
+                                    mx_args=' -v | tee %s' % tsss_mc_log,
+                                    )
