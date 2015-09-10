@@ -39,13 +39,13 @@ reject = dict(grad=4000e-13,  # T / m (gradiometers)
 # ICA Part
 ica = ICA(n_components=0.95, method='fastica')
 
-picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True, ecg=True,
+picks = mne.pick_types(raw.info, meg=True, eeg=False,
                        stim=False, exclude='bads')
 
 ica.fit(raw, picks=picks, reject=reject)
 
 # maximum number of components to reject
-n_max_ecg, n_max_eog = 3, 2
+n_max_ecg, n_max_eog = 3, 1
 
 ##########################################################################
 # 2) identify bad components by analyzing latent sources.
@@ -54,7 +54,8 @@ title = 'Sources related to %s artifacts (red)'
 
 # generate ECG epochs use detection via phase statistics
 
-ecg_epochs = create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=picks)
+ecg_epochs = create_ecg_epochs(raw, ch_name="EOG006",
+                               tmin=-.5, tmax=.5, picks=picks)
 
 ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
 ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
@@ -70,6 +71,9 @@ if ecg_inds:
     ica.exclude += ecg_inds
 
 # detect EOG by correlation
+
+
+eog_epochs = create_eog_epochs(raw, ch_name="EOG004")
 
 eog_inds, scores = ica.find_bads_eog(raw)
 ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
@@ -107,5 +111,6 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save(data_path + "0001_p_03_filter_resample_ica-raw_tsss_mc.fif")
+raw_ica.save(data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss.fif",
+             overwrite=True)
  

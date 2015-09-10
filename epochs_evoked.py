@@ -21,47 +21,48 @@ import socket
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/Hyp_meg/scratch/Tone_task_MNE/"
+    data_path = "/home/mje/mnt/caa/scratch/"
     n_jobs = 1
-elif hostname == "isis":
-    data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch/"
-    n_jobs = 3
+else:
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+    n_jobs = 1
 
 
-raw = mne.io.Raw(data_path + "p_01_data_ica_filter_resample_tsss_raw.fif",
+raw = mne.io.Raw(data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss.fif",
           preload=True)
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12,  # T (magnetometers)
-              eeg=180e-6 #
+              mag=4e-12  # T (magnetometers)
+              # eeg=180e-6 #
               )
 
 ####
 # Set parameters
-tmin, tmax = -0.2, 0.4
+tmin, tmax = -0.5, 2
 
 # Select events to extract epochs from.
-event_id = {'entrainment': 1,
-            'Control': 2,
-            'left': 4,
-            'right': 8}
+event_id = {'ent_left': 1,
+            'ent_right': 2,
+            'ctl_left': 4,
+            'ctl_right': 8}
 
 #   Setup for reading the raw data
 events = mne.find_events(raw)
 
 #   Plot raw data
-fig = raw.plot(events=events, event_color={1: 'cyan', -1: 'lightgray'})
+fig = raw.plot(events=events, event_color={1: 'cyan', 2: 'blue',
+                                           4: "green", 8: "yellow"})
 
 #   Set up pick list: EEG + STI 014 - bad channels (modify to your needs)
 include = []  # or stim channels ['STI 014']
 # raw.info['bads'] += ['EEG 053']  # bads + 1 more
 
 # pick EEG and MEG channels
-picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=True,
+picks = mne.pick_types(raw.info, meg=True, eeg=False, stim=False, eog=True,
                        include=include, exclude='bads')
 # Read epochs
 epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
-                    baseline=(None, 0), reject=dict(eeg=80e-6, eog=150e-6),
+                    baseline=(None, 0), reject=reject,
                     preload=True)
 
 # Plot epochs.
@@ -73,21 +74,12 @@ epochs.drop_bad_epochs()
 epochs.plot_drop_log(subject='sample')
 
 # Average epochs and get evoked data corresponding to the left stimulation
-evoked = epochs['Left'].average()
-
-evoked.save('sample_audvis_eeg-ave.fif')  # save evoked data to disk
-
-###############################################################################
-# View evoked response
-
-evoked.plot()
-
 ###############################################################################
 # Save evoked responses for different conditions to disk
 
 # average epochs and get Evoked datasets
-evokeds = [epochs[cond].average() for cond in ['Left', 'Right']]
+evokeds = [epochs[cond].average() for cond in ['ent_left', 'ent_right',
+                                               'ctl_left', 'ctl_right']]
 
 # save evoked data to disk
-mne.write_evokeds('sample_auditory_and_visual_eeg-ave.fif', evokeds)
-o
+mne.write_evokeds('0001_p_03_filter_ds_ica-mc_raw_tsss-ave.fif', evokeds)
