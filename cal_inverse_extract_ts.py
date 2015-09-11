@@ -16,21 +16,21 @@ import matplotlib.pyplot as plt
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/Malthe_proj/scratch/"
+    data_path = "/home/mje/mnt/caa/scratch/"
     n_jobs = 1
-elif hostname == "isis":
-    data_path = "/projects/MINDLAB2015_MEG-Gambling/scratch/"
-    n_jobs = 3
-
+else:
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+    n_jobs = 1
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
 
-fname_inv = data_path + 'p_01-meg-oct-6-inv.fif'
-fname_epochs = data_path + 'p_01_ica_filter_ds_tsss-epo.fif'
+fname_inv = data_path + '0001-meg-oct-6-inv.fif'
+fname_epochs = data_path + '0001_p_03_filter_ds_ica-mc_tsss-epo.fif'
+fname_evoked = data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss-ave.fif"
 
 
-labels = mne.read_labels_from_annot('p_01', parc='PALS_B12_Lobes',
+labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Lobes',
                                     # regexp="Bro",
                                     subjects_dir=subjects_dir)
 
@@ -45,10 +45,10 @@ method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 # Load data
 inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
+evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
 # Set up pick list
 
 # Get evoked data (averaging across trials in sensor space)
-evoked = epochs.average()
 
 # Compute inverse solution and stcs for each epoch
 # Use the same inverse operator as with evoked data (i.e., set nave)
@@ -72,7 +72,10 @@ for cond in epochs.event_id.keys():
     for label in labels_occ:
         plt.figure()
         epochs_induced = epochs[cond].copy().subtract_evoked()
-        for ii, (this_epochs, title) in enumerate(zip([epochs["ent_L", "ent_R"],
+        for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left",
+                                                              "ent_right",
+                                                              "ctl_left",
+                                                              "ctl_right"],
                                                        epochs_induced],
                                                       ['evoked + induced',
                                                        'induced only'])):
@@ -81,12 +84,12 @@ for cond in epochs.event_id.keys():
                 this_epochs, inverse_operator, frequencies, label,
                 baseline=(0.7, 0.95),
                 baseline_mode='zscore', n_cycles=n_cycles, n_jobs=n_jobs)
-    
+
             power = np.mean(power, axis=0)  # average over sources
             phase_lock = np.mean(phase_lock, axis=0)  # average over sources
             times = epochs.times
-    
-            #######################################################################
+
+            ###################################################################
             # View time-frequency plots
             plt.subplots_adjust(0.1, 0.08, 0.96, 0.94, 0.2, 0.43)
             plt.subplot(2, 2, 2 * ii + 1)
@@ -98,7 +101,7 @@ for cond in epochs.event_id.keys():
             plt.ylabel('Frequency (Hz)')
             plt.title('Power (%s), condition: %s' % (title, cond))
             plt.colorbar()
-    
+
             plt.subplot(2, 2, 2 * ii + 2)
             plt.imshow(phase_lock,
                        extent=[times[60], times[260],
@@ -108,9 +111,9 @@ for cond in epochs.event_id.keys():
             plt.xlabel('Time (s)')
             plt.ylabel('Frequency (Hz)')
             plt.title('Phase-lock (%s), cond: %s, label: %s'
-                       % (title, cond, label.name)
+                      % (title, cond, label.name))
             plt.colorbar()
-    
+
             plt.show()
 
 
@@ -124,26 +127,26 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
                                          label=label,
                                          lambda2=lambda2,
                                          method="MNE",
-                                         baseline=(0.7, 0.95),
+                                         baseline=(None, 0),
                                          baseline_mode='zscore',
                                          pca=True)
 
         exec("BP_%s = stcs['alpha']" % cond)
 
     plt.figure()
-    plt.plot(BP_ent_L.times, np.mean([stc.data.mean(axis=0) 
-                                    for stc in stcs_ent_L], axis=0), 'b',
-             linewidth=2, label="ent_L")
-    plt.plot(BP_ent_R.times, np.mean([stc.data.mean(axis=0)
-                                     for stc in stcs_ent_R], axis=0), 'k',
-             linewidth=2, label="ent_R")
-    plt.plot(BP_ctl_L.times, np.mean([stc.data.mean(axis=0)
-                                     for stc in stcs_ctl_L], axis=0), 'r',
-             linewidth=2, label="ctl_L")
-    plt.plot(BP_ctl_R.times, np.mean([stc.data.mean(axis=0)
-                                     for stc in stcs_ctl_R], axis=0), 'g',
-             linewidth=2, label="ctl_R")
-             
+    plt.plot(BP_ent_left.times, np.mean([stc.data.mean(axis=0) 
+                                         for stc in stcs_ent_L], axis=0), 'b',
+             linewidth=2, label="ent_left")
+    plt.plot(BP_ent_right.times, np.mean([stc.data.mean(axis=0)
+                                          for stc in stcs_ent_R], axis=0), 'k',
+             linewidth=2, label="ent_right")
+    plt.plot(BP_ctl_left.times, np.mean([stc.data.mean(axis=0)
+                                         for stc in stcs_ctl_L], axis=0), 'r',
+             linewidth=2, label="ctl_left")
+    plt.plot(BP_ctl_right.times, np.mean([stc.data.mean(axis=0)
+                                          for stc in stcs_ctl_R], axis=0), 'g',
+             linewidth=2, label="ctl_right")
+
     plt.legend()
     plt.title("label: %s" % label.name)
     plt.ylabel("zscore")
