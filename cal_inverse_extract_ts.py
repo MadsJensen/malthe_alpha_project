@@ -83,7 +83,8 @@ for cond in epochs.event_id.keys():
             power, phase_lock = source_induced_power(
                 this_epochs, inverse_operator, frequencies, label,
                 baseline=(0.7, 0.95),
-                baseline_mode='zscore', n_cycles=n_cycles, n_jobs=n_jobs)
+                baseline_mode='zscore', n_cycles=n_cycles, pca=True,
+                n_jobs=n_jobs)
 
             power = np.mean(power, axis=0)  # average over sources
             phase_lock = np.mean(phase_lock, axis=0)  # average over sources
