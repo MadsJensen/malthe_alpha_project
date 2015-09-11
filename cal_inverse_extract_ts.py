@@ -136,16 +136,16 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
 
     plt.figure()
     plt.plot(BP_ent_left.times, np.mean([stc.data.mean(axis=0) 
-                                         for stc in stcs_ent_L], axis=0), 'b',
+                                         for stc in stcs_ent_left], axis=0), 'b',
              linewidth=2, label="ent_left")
     plt.plot(BP_ent_right.times, np.mean([stc.data.mean(axis=0)
-                                          for stc in stcs_ent_R], axis=0), 'k',
+                                          for stc in stcs_ent_right], axis=0), 'k',
              linewidth=2, label="ent_right")
     plt.plot(BP_ctl_left.times, np.mean([stc.data.mean(axis=0)
-                                         for stc in stcs_ctl_L], axis=0), 'r',
+                                         for stc in stcs_ctl_left], axis=0), 'r',
              linewidth=2, label="ctl_left")
     plt.plot(BP_ctl_right.times, np.mean([stc.data.mean(axis=0)
-                                          for stc in stcs_ctl_R], axis=0), 'g',
+                                          for stc in stcs_ctl_right], axis=0), 'g',
              linewidth=2, label="ctl_right")
 
     plt.legend()
