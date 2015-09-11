@@ -82,7 +82,7 @@ for cond in epochs.event_id.keys():
             # compute the source space power and phase lock
             power, phase_lock = source_induced_power(
                 this_epochs, inverse_operator, frequencies, label,
-                baseline=(0.7, 0.95),
+                baseline=(None, 0),
                 baseline_mode='zscore', n_cycles=n_cycles, pca=True,
                 n_jobs=n_jobs)
 
