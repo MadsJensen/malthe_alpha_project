@@ -123,7 +123,7 @@ epochs["entrainment"]
 
 # In[30]:
 
-freqs = np.arange(6, 30, 1)  # define frequencies of interest
+freqs = np.arange(6, 20, 1)  # define frequencies of interest
 n_cycles = freqs / 2.  # different number of cycle per frequency
 power_ent_L, itc_ent_L = mne.time_frequency.tfr_morlet(epochs["ent_left"],
                                                        freqs=freqs,
@@ -177,7 +177,7 @@ itc_ent_L.plot_topo(baseline=baseline,mode='zscore',
                     
 itc_ent_R.plot_topo(baseline=baseline, mode='zscore',
                     vmin=0,
-                    cmap="hot"mode='zscore',
+                    cmap="hot",
                     title='ITC: ent_r')
                     
 itc_ctl_L.plot_topo(baseline=baseline, mode='zscore',
