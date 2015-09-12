@@ -7,7 +7,8 @@ Created on Mon Aug 31 10:17:09 2015
 
 import mne
 from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator,
-                              source_induced_power, source_band_induced_power)
+                              source_induced_power, source_band_induced_power,
+                              compute_source_psd_epochs)
 
 import socket
 import numpy as np
@@ -62,10 +63,12 @@ for cond in epochs.event_id.keys():
 
 # Compute a source estimate per frequency band including and excluding the
 # evoked response
-frequencies = np.arange(7, 16, 1)  # define frequencies of interest
+frequencies = np.arange(8, 13, 1)  # define frequencies of interest
 n_cycles = frequencies / 3.  # different number of cycle per frequency
 
 # subtract the evoked response in order to exclude evoked activity
+
+labels_occ = [labels[10]]
 
 # plt.close('all')
 for cond in epochs.event_id.keys():
@@ -73,9 +76,10 @@ for cond in epochs.event_id.keys():
         plt.figure()
         epochs_induced = epochs[cond].copy().subtract_evoked()
         for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left",
-                                                              "ent_right",
-                                                              "ctl_left",
-                                                              "ctl_right"],
+#                                                              "ent_right",
+#                                                              "ctl_left",
+#                                                              "ctl_right"
+                                                              ],
                                                        epochs_induced],
                                                       ['evoked + induced',
                                                        'induced only'])):
@@ -118,7 +122,7 @@ for cond in epochs.event_id.keys():
             plt.show()
 
 
-bands = dict(alpha=[8, 12])
+bands = dict(alpha=[8, 12], beta=[15, 30])
 
 for label in [labels[9], labels[10], labels[9]+labels[10]]:
     for cond in epochs.event_id.keys():
@@ -127,29 +131,77 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
                                          bands=bands,
                                          label=label,
                                          lambda2=lambda2,
-                                         method="MNE",
+                                         method="dSPM",
                                          baseline=(None, 0),
                                          baseline_mode='zscore',
                                          pca=True)
 
-        exec("BP_%s = stcs['alpha']" % cond)
+        exec("BP_%s_alpha = stcs['alpha']" % cond)
+        exec("BP_%s_beta = stcs['beta']" % cond)
 
+for label in [labels[9], labels[10], labels[9]+labels[10]]:
     plt.figure()
     plt.plot(BP_ent_left.times, np.mean([stc.data.mean(axis=0) 
                                          for stc in stcs_ent_left], axis=0), 'b',
              linewidth=2, label="ent_left")
-    plt.plot(BP_ent_right.times, np.mean([stc.data.mean(axis=0)
-                                          for stc in stcs_ent_right], axis=0), 'k',
-             linewidth=2, label="ent_right")
+#    plt.plot(BP_ent_right_beta.times, np.mean([stc.data.mean(axis=0)
+#                                          for stc in stcs_ent_right], axis=0),
+#                                          'k',
+#                                          linewidth=2, label="ent_right")
+
     plt.plot(BP_ctl_left.times, np.mean([stc.data.mean(axis=0)
-                                         for stc in stcs_ctl_left], axis=0), 'r',
-             linewidth=2, label="ctl_left")
-    plt.plot(BP_ctl_right.times, np.mean([stc.data.mean(axis=0)
-                                          for stc in stcs_ctl_right], axis=0), 'g',
-             linewidth=2, label="ctl_right")
+                                         for stc in stcs_ctl_left], axis=0),
+                                         'r', linewidth=2, label="ctl_left")
+#    plt.plot(BP_ctl_right_beta.times, np.mean([stc.data.mean(axis=0)
+#                                          for stc in stcs_ctl_right], axis=0),
+#                                          'g',
+#                                          linewidth=2, label="ctl_right")
 
     plt.legend()
     plt.title("label: %s" % label.name)
     plt.ylabel("zscore")
     plt.xlabel("Time (seconds)")
-    plt.savefig("%s_BP_alpha.png" % label.name)
+#    plt.savefig("%s_BP_alpha.png" % label.name)
+
+for label in labels_occ:   
+    for cond in epochs.event_id.keys():
+        tmp = compute_source_psd_epochs(epochs_short[cond],
+                                  inverse_operator,
+                                  method="dSPM",
+                                  fmin=6, fmax=13,
+                                  label=label,
+                                  pca=True)
+        tmp2 = np.mean([stc.data for stc in tmp], axis=1)
+        exec("source_psd_%s = tmp2" % cond)
+    
+    times = tmp[0].times
+    plt.figure()
+    plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
+             linewidth=2, label="ent_left")
+#    plt.plot(times, source_psd_ent_left.mean(axis=0) + 
+#             source_psd_ent_left.std(axis=0), 'b--')
+#    plt.plot(times, source_psd_ent_left.mean(axis=0) -
+#             source_psd_ent_left.std(axis=0), 'b--')          
+             
+    plt.plot(times, source_psd_ctl_left.mean(axis=0), 'r',
+             linewidth=2, label="ctl_left")
+#    plt.plot(times, source_psd_ctl_left.mean(axis=0) -
+#             source_psd_ctl_left.std(axis=0), 'r--')
+#    plt.plot(times, source_psd_ctl_left.mean(axis=0) +
+#             source_psd_ctl_left.std(axis=0), 'r--')
+
+    plt.plot(times, source_psd_ent_right.mean(axis=0), 'lightblue',
+             linewidth=2, label="ent_right")
+#    plt.plot(times, source_psd_ent_right.mean(axis=0) + 
+#             source_psd_ent_right.std(axis=0), 'g--')
+#    plt.plot(times, source_psd_ent_right.mean(axis=0) -
+#             source_psd_ent_right.std(axis=0), 'g--')             
+
+    plt.plot(times, source_psd_ctl_right.mean(axis=0), 'darkred',
+             linewidth=2, label="ctl_right")
+#    plt.plot(times, source_psd_ctl_right.mean(axis=0) +
+#             source_psd_ctl_right.std(axis=0), 'y--')
+#    plt.plot(times, source_psd_ctl_right.mean(axis=0) -
+#             source_psd_ctl_right.std(axis=0), 'y--')
+    plt.legend()
+    plt.title(label.name)
