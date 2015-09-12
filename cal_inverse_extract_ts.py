@@ -4,15 +4,17 @@ Created on Mon Aug 31 10:17:09 2015
 
 @author: mje
 """
-
 import mne
 from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator,
                               source_induced_power, source_band_induced_power,
-                              compute_source_psd_epochs)
+                              compute_source_psd_epochs, apply_inverse)
 
 import socket
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
 
@@ -47,7 +49,16 @@ method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
 evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
-# Set up pick list
+
+# Plot evoked
+# left ctl, left ent & diff
+mne.viz.plot_evoked_topo([evokeds[2], evokeds[0]],
+                          color=['r', 'g'])
+
+# Right ctl, left ent & diff
+mne.viz.plot_evoked_topo([evokeds[3], evokeds[1]],
+                          color=['red', 'white'])
+
 
 # Get evoked data (averaging across trials in sensor space)
 
@@ -60,6 +71,35 @@ for cond in epochs.event_id.keys():
                                 method, pick_ori="normal")
     exec("stcs_%s = stcs" % cond)
 
+
+snr = 3.0  # Standard assumption for average data but using it for single trial
+lambda2 = 1.0 / snr ** 2
+method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+
+for evk in evokeds:
+    stc = apply_inverse(evk, inverse_operator, lambda2=lambda2, 
+                        method=method)                      
+    exec("stc_%s = stc" % evk.comment)
+
+times = stc_ctl_left.times
+for label in labels_occ:
+    plt.figure()
+    plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
+             'r',linewidth=2, label="ctl_left")
+    plt.plot(times[:425], stc_ctl_right.in_label(label).data.mean(axis=0)[:425],
+             'm', linewidth=2, label="ctl_right")
+    plt.plot(times[:425], stc_ent_left.in_label(label).data.mean(axis=0)[:425],
+             'b', linewidth=2, label="ent_left")
+    plt.plot(times[:425], stc_ent_right.in_label(label).data.mean(axis=0)[:425],
+             'g', linewidth=2, label="ent_right")
+    
+    plt.legend()
+    plt.title("label: %s" % label.name)
+    plt.ylabel("dSPM")
+    plt.xlabel("Time (seconds)")
+    plt.savefig("%s_source_evoked.png" % label.name)
+
+    
 
 # Compute a source estimate per frequency band including and excluding the
 # evoked response
@@ -76,9 +116,9 @@ for cond in epochs.event_id.keys():
         plt.figure()
         epochs_induced = epochs[cond].copy().subtract_evoked()
         for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left",
-#                                                              "ent_right",
-#                                                              "ctl_left",
-#                                                              "ctl_right"
+                                                              # "ent_right",
+                                                              # "ctl_left",
+                                                              # "ctl_right"
                                                               ],
                                                        epochs_induced],
                                                       ['evoked + induced',
@@ -122,9 +162,11 @@ for cond in epochs.event_id.keys():
             plt.show()
 
 
-bands = dict(alpha=[8, 12], beta=[15, 30])
+bands = dict(alpha=[8, 12])
 
-for label in [labels[9], labels[10], labels[9]+labels[10]]:
+BP_list = []
+
+for j, label in enumerate([labels[9], labels[10], labels[9]+labels[10]]):
     for cond in epochs.event_id.keys():
         stcs = source_band_induced_power(epochs[cond],
                                          inverse_operator,
@@ -136,34 +178,30 @@ for label in [labels[9], labels[10], labels[9]+labels[10]]:
                                          baseline_mode='zscore',
                                          pca=True)
 
-        exec("BP_%s_alpha = stcs['alpha']" % cond)
-        exec("BP_%s_beta = stcs['beta']" % cond)
+        if len(label.name.split()) > 2:
+            l_name = label.name.split()[0][5:][:-3] + "_lh_rh"
+        else:
+            l_name = label.name[5:][:-3] + "_" + label.name[-2:]
 
-for label in [labels[9], labels[10], labels[9]+labels[10]]:
-    plt.figure()
-    plt.plot(BP_ent_left.times, np.mean([stc.data.mean(axis=0) 
-                                         for stc in stcs_ent_left], axis=0), 'b',
-             linewidth=2, label="ent_left")
-#    plt.plot(BP_ent_right_beta.times, np.mean([stc.data.mean(axis=0)
-#                                          for stc in stcs_ent_right], axis=0),
-#                                          'k',
-#                                          linewidth=2, label="ent_right")
+        BP_list.append("BP_%s_%s" % (cond, l_name))
+        
+        exec("BP_%s_%s = stcs['alpha']" % (cond, l_name))
 
-    plt.plot(BP_ctl_left.times, np.mean([stc.data.mean(axis=0)
-                                         for stc in stcs_ctl_left], axis=0),
-                                         'r', linewidth=2, label="ctl_left")
-#    plt.plot(BP_ctl_right_beta.times, np.mean([stc.data.mean(axis=0)
-#                                          for stc in stcs_ctl_right], axis=0),
-#                                          'g',
-#                                          linewidth=2, label="ctl_right")
 
-    plt.legend()
-    plt.title("label: %s" % label.name)
-    plt.ylabel("zscore")
-    plt.xlabel("Time (seconds)")
-#    plt.savefig("%s_BP_alpha.png" % label.name)
 
-for label in labels_occ:   
+
+
+
+plt.legend()
+plt.title("label: %s" % label.name)
+plt.ylabel("zscore")
+plt.xlabel("Time (seconds)")
+plt.savefig("%s_BP_alpha.png" % label.name)
+
+
+epochs_short = epochs.crop(0, 1., copy=True)
+
+for label in labels_occ:
     for cond in epochs.event_id.keys():
         tmp = compute_source_psd_epochs(epochs_short[cond],
                                   inverse_operator,
@@ -175,6 +213,7 @@ for label in labels_occ:
         exec("source_psd_%s = tmp2" % cond)
     
     times = tmp[0].times
+    
     plt.figure()
     plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
              linewidth=2, label="ent_left")
@@ -190,14 +229,14 @@ for label in labels_occ:
 #    plt.plot(times, source_psd_ctl_left.mean(axis=0) +
 #             source_psd_ctl_left.std(axis=0), 'r--')
 
-    plt.plot(times, source_psd_ent_right.mean(axis=0), 'lightblue',
+    plt.plot(times, source_psd_ent_right.mean(axis=0), 'g',
              linewidth=2, label="ent_right")
 #    plt.plot(times, source_psd_ent_right.mean(axis=0) + 
 #             source_psd_ent_right.std(axis=0), 'g--')
 #    plt.plot(times, source_psd_ent_right.mean(axis=0) -
 #             source_psd_ent_right.std(axis=0), 'g--')             
 
-    plt.plot(times, source_psd_ctl_right.mean(axis=0), 'darkred',
+    plt.plot(times, source_psd_ctl_right.mean(axis=0), 'm',
              linewidth=2, label="ctl_right")
 #    plt.plot(times, source_psd_ctl_right.mean(axis=0) +
 #             source_psd_ctl_right.std(axis=0), 'y--')
@@ -205,3 +244,38 @@ for label in labels_occ:
 #             source_psd_ctl_right.std(axis=0), 'y--')
     plt.legend()
     plt.title(label.name)
+
+
+def psds_to_DataFrame(psds, times, condition=None):
+    """
+    convert a list of stcs to a pandas dataframe for plotting with seaborn.
+
+    stcs : list of stcs to be converted.
+    times : Numpy array with the times of the stcs.
+    condition : string to add a condition column.
+    """
+    results_tmp = []
+
+    for j in range(len(psds)):
+        tmp_pd = pd.DataFrame()
+        tmp_pd["psd"] = psds[j]
+        tmp_pd["times"] = times
+        tmp_pd["trial"] = j
+
+        if condition is not None:
+            tmp_pd["Condition"] = condition
+
+        results_tmp += [tmp_pd]
+
+    return pd.concat(results_tmp)
+
+
+psds_ent_l = psds_to_DataFrame(source_psd_ent_left, times, "ent_l")
+psds_ent_r = psds_to_DataFrame(source_psd_ent_right, times, "ent_r")
+psds_ctl_l = psds_to_DataFrame(source_psd_ctl_left, times, "ctl_l")
+psds_ctl_r = psds_to_DataFrame(source_psd_ctl_right, times, "ctl_r")
+
+psds_all = pd.concat([psds_ent_l, psds_ent_r, psds_ctl_l, psds_ctl_r])
+
+sns.tsplot(psds_all, time="times", unit="trial", condition="Condition",
+           value="psd", err_style="ci_bars", interpolate=True)
