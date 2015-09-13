@@ -53,11 +53,11 @@ evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
 # Plot evoked
 # left ctl, left ent & diff
 mne.viz.plot_evoked_topo([evokeds[2], evokeds[0]],
-                          color=['r', 'g'])
+                         color=['r', 'g'])
 
 # Right ctl, left ent & diff
 mne.viz.plot_evoked_topo([evokeds[3], evokeds[1]],
-                          color=['red', 'white'])
+                         color=['red', 'white'])
 
 
 # Get evoked data (averaging across trials in sensor space)
@@ -77,29 +77,28 @@ lambda2 = 1.0 / snr ** 2
 method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
 for evk in evokeds:
-    stc = apply_inverse(evk, inverse_operator, lambda2=lambda2, 
-                        method=method)                      
+    stc = apply_inverse(evk, inverse_operator, lambda2=lambda2,
+                        method=method)
     exec("stc_%s = stc" % evk.comment)
 
 times = stc_ctl_left.times
 for label in labels_occ:
     plt.figure()
     plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
-             'r',linewidth=2, label="ctl_left")
+             'r', linewidth=2, label="ctl_left")
     plt.plot(times[:425], stc_ctl_right.in_label(label).data.mean(axis=0)[:425],
              'm', linewidth=2, label="ctl_right")
     plt.plot(times[:425], stc_ent_left.in_label(label).data.mean(axis=0)[:425],
              'b', linewidth=2, label="ent_left")
     plt.plot(times[:425], stc_ent_right.in_label(label).data.mean(axis=0)[:425],
              'g', linewidth=2, label="ent_right")
-    
+
     plt.legend()
     plt.title("label: %s" % label.name)
     plt.ylabel("dSPM")
     plt.xlabel("Time (seconds)")
     plt.savefig("%s_source_evoked.png" % label.name)
 
-    
 
 # Compute a source estimate per frequency band including and excluding the
 # evoked response
@@ -184,12 +183,8 @@ for j, label in enumerate([labels[9], labels[10], labels[9]+labels[10]]):
             l_name = label.name[5:][:-3] + "_" + label.name[-2:]
 
         BP_list.append("BP_%s_%s" % (cond, l_name))
-        
+
         exec("BP_%s_%s = stcs['alpha']" % (cond, l_name))
-
-
-
-
 
 
 plt.legend()
@@ -204,24 +199,24 @@ epochs_short = epochs.crop(0, 1., copy=True)
 for label in labels_occ:
     for cond in epochs.event_id.keys():
         tmp = compute_source_psd_epochs(epochs_short[cond],
-                                  inverse_operator,
-                                  method="dSPM",
-                                  fmin=6, fmax=13,
-                                  label=label,
-                                  pca=True)
+                                        inverse_operator,
+                                        method="dSPM",
+                                        fmin=6, fmax=13,
+                                        label=label,
+                                        pca=True)
         tmp2 = np.mean([stc.data for stc in tmp], axis=1)
         exec("source_psd_%s = tmp2" % cond)
-    
+
     times = tmp[0].times
-    
+
     plt.figure()
     plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
              linewidth=2, label="ent_left")
-#    plt.plot(times, source_psd_ent_left.mean(axis=0) + 
+#    plt.plot(times, source_psd_ent_left.mean(axis=0) +
 #             source_psd_ent_left.std(axis=0), 'b--')
 #    plt.plot(times, source_psd_ent_left.mean(axis=0) -
-#             source_psd_ent_left.std(axis=0), 'b--')          
-             
+#             source_psd_ent_left.std(axis=0), 'b--')
+
     plt.plot(times, source_psd_ctl_left.mean(axis=0), 'r',
              linewidth=2, label="ctl_left")
 #    plt.plot(times, source_psd_ctl_left.mean(axis=0) -
@@ -231,10 +226,10 @@ for label in labels_occ:
 
     plt.plot(times, source_psd_ent_right.mean(axis=0), 'g',
              linewidth=2, label="ent_right")
-#    plt.plot(times, source_psd_ent_right.mean(axis=0) + 
+#    plt.plot(times, source_psd_ent_right.mean(axis=0) +
 #             source_psd_ent_right.std(axis=0), 'g--')
 #    plt.plot(times, source_psd_ent_right.mean(axis=0) -
-#             source_psd_ent_right.std(axis=0), 'g--')             
+#             source_psd_ent_right.std(axis=0), 'g--')
 
     plt.plot(times, source_psd_ctl_right.mean(axis=0), 'm',
              linewidth=2, label="ctl_right")
