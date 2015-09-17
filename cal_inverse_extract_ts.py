@@ -51,7 +51,7 @@ epochs = mne.read_epochs(fname_epochs)
 evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
 
 # Plot evoked
-# left ctl, left ent & diff
+# right ctl, left ent & diff
 mne.viz.plot_evoked_topo([evokeds[2], evokeds[0]],
                          color=['r', 'g'])
 
@@ -81,24 +81,46 @@ for evk in evokeds:
                         method=method)
     exec("stc_%s = stc" % evk.comment)
 
-times = stc_ctl_left.times
+times = stc_ctl_left_pas_3.times
+#
+#for label in labels_occ:
+#    plt.figure()
+#    plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
+#             'r', linewidth=2, label="ctl_left")
+#    plt.plot(times[:425], stc_ctl_right.in_label(label).data.mean(axis=0)[:425],
+#             'm', linewidth=2, label="ctl_right")
+#    plt.plot(times[:425], stc_ent_left.in_label(label).data.mean(axis=0)[:425],
+#             'b', linewidth=2, label="ent_left")
+#    plt.plot(times[:425], stc_ent_right.in_label(label).data.mean(axis=0)[:425],
+#             'g', linewidth=2, label="ent_right")
+#
+#    plt.legend()
+#    plt.title("label: %s" % label.name)
+#    plt.ylabel("dSPM")
+#    plt.xlabel("Time (seconds)")
+#    plt.savefig("%s_source_evoked.png" % label.name)
+#
+
 for label in labels_occ:
     plt.figure()
-    plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
-             'r', linewidth=2, label="ctl_left")
-    plt.plot(times[:425], stc_ctl_right.in_label(label).data.mean(axis=0)[:425],
-             'm', linewidth=2, label="ctl_right")
-    plt.plot(times[:425], stc_ent_left.in_label(label).data.mean(axis=0)[:425],
-             'b', linewidth=2, label="ent_left")
-    plt.plot(times[:425], stc_ent_right.in_label(label).data.mean(axis=0)[:425],
-             'g', linewidth=2, label="ent_right")
+#    plt.plot(times[:425], stc_ctl_left_pas_2.in_label(label).data.mean(axis=0),
+#             'r', linewidth=2, label="ctl_left_pas_2")
+#    plt.plot(times[:425], stc_ctl_right_pas_2.in_label(label).data.mean(axis=0),
+#             'm', linewidth=2, label="ctl_right_pas_2")
+    plt.plot(times, stc_ent_left_pas_2.in_label(label).data.mean(axis=0),
+             'b', linewidth=2, label="ent_left_pas_2")
+    plt.plot(times, stc_ent_left_pas_3.in_label(label).data.mean(axis=0),
+             'b:', linewidth=2, label="ent_left_pas_3")
+    plt.plot(times, stc_ent_right_pas_2.in_label(label).data.mean(axis=0),
+             'g', linewidth=2, label="ent_right_pas_2")
+    plt.plot(times, stc_ent_left_pas_3.in_label(label).data.mean(axis=0),
+             'g:', linewidth=2, label="ent_right_pas_3")
 
     plt.legend()
     plt.title("label: %s" % label.name)
     plt.ylabel("dSPM")
     plt.xlabel("Time (seconds)")
     plt.savefig("%s_source_evoked.png" % label.name)
-
 
 # Compute a source estimate per frequency band including and excluding the
 # evoked response
@@ -110,11 +132,12 @@ n_cycles = frequencies / 3.  # different number of cycle per frequency
 labels_occ = [labels[10]]
 
 # plt.close('all')
-for cond in epochs.event_id.keys():
+for cond in ["ent_left_pas_3", "ent_left_pas_2"]: #epochs.event_id.keys():
     for label in labels_occ:
         plt.figure()
         epochs_induced = epochs[cond].copy().subtract_evoked()
-        for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left",
+        for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left_pas_3",
+                                                              "ent_left_pas_2"# "ent_left",
                                                               # "ent_right",
                                                               # "ctl_left",
                                                               # "ctl_right"
@@ -192,23 +215,7 @@ plt.title("label: %s" % label.name)
 plt.ylabel("zscore")
 plt.xlabel("Time (seconds)")
 plt.savefig("%s_BP_alpha.png" % label.name)
-
-
-epochs_short = epochs.crop(0, 1., copy=True)
-
-for label in labels_occ:
-    for cond in epochs.event_id.keys():
-        tmp = compute_source_psd_epochs(epochs_short[cond],
-                                        inverse_operator,
-                                        method="dSPM",
-                                        fmin=6, fmax=13,
-                                        label=label,
-                                        pca=True)
-        tmp2 = np.mean([stc.data for stc in tmp], axis=1)
-        exec("source_psd_%s = tmp2" % cond)
-
-    times = tmp[0].times
-
+ 
     plt.figure()
     plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
              linewidth=2, label="ent_left")
@@ -265,12 +272,38 @@ def psds_to_DataFrame(psds, times, condition=None):
     return pd.concat(results_tmp)
 
 
-psds_ent_l = psds_to_DataFrame(source_psd_ent_left, times, "ent_l")
+psds_ent_left_pas_2 = psds_to_DataFrame(source_psd_ent_left_pas_2, times,
+                                     "ent_l_pas_2")
+psds_ent_left_pas_3 = psds_to_DataFrame(source_psd_ent_left_pas_3, times,
+                                     "ent_l_pas_3")
+psds_ctl_left_pas_2 = psds_to_DataFrame(source_psd_ctl_left_pas_2, times,
+                                     " ctl_l_pas_2")
+psds_ctl_left_pas_3 = psds_to_DataFrame(source_psd_ctl_left_pas_3, times,
+                                     "ctl_l_pas_3")                                     
+         
+psds_ent_right_pas_2 = psds_to_DataFrame(source_psd_ent_right_pas_2, times,
+                                     "ent_r_pas_2")
+psds_ent_right_pas_3 = psds_to_DataFrame(source_psd_ent_right_pas_3, times,
+                                     "ent_r_pas_3")
+psds_ctl_right_pas_2 = psds_to_DataFrame(source_psd_ctl_right_pas_2, times,
+                                     " ctl_r_pas_2")
+psds_ctl_right_pas_3 = psds_to_DataFrame(source_psd_ctl_right_pas_3, times,
+                                     "ctl_r_pas_3")                                     
+                                     
+                            
 psds_ent_r = psds_to_DataFrame(source_psd_ent_right, times, "ent_r")
 psds_ctl_l = psds_to_DataFrame(source_psd_ctl_left, times, "ctl_l")
 psds_ctl_r = psds_to_DataFrame(source_psd_ctl_right, times, "ctl_r")
 
-psds_all = pd.concat([psds_ent_l, psds_ent_r, psds_ctl_l, psds_ctl_r])
+psds_all = pd.concat([psds_ent_left_pas_2,
+                      psds_ent_left_pas_3,
+                      psds_ctl_left_pas_2,
+                      psds_ctl_left_pas_3,
+                      psds_ent_right_pas_2,
+                      psds_ent_right_pas_3,
+                      psds_ctl_right_pas_2,
+                      psds_ctl_right_pas_3])
 
+plt.figure()                      
 sns.tsplot(psds_all, time="times", unit="trial", condition="Condition",
            value="psd", err_style="ci_bars", interpolate=True)
