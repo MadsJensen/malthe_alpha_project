@@ -90,7 +90,7 @@ inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
 
 # Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels/hemi
-labels = mne.read_labels_from_annot('subject_1', parc='PALS_B12_Brodmann',
+labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Brodmann',
                                     regexp="Brodmann",
                                     subjects_dir=subjects_dir)
 
@@ -106,20 +106,50 @@ labels_name = []
 for label in labels:
     labels_name += [label.name]
 
+# Extract  time series
+ts_ctl_left = mne.extract_label_time_course(stcs_ctl_left,
+                                            labels,
+                                            src=inverse_operator["src"],
+                                            mode = "mean_flip")
+
+ts_ent_left = mne.extract_label_time_course(stcs_ent_left,
+                                            labels,
+                                            src=inverse_operator["src"],
+                                            mode = "mean_flip")
+
+stcs_all_left = stcs_ctl_left + stcs_ent_left
+ts_all_left = np.asarray(mne.extract_label_time_course(stcs_all_left,
+                                            labels,
+                                            src=inverse_operator["src"],
+                                            mode = "mean_flip"))
 
 number_of_permutations = 2000
-index = np.arange(0, 154)
+index = np.arange(0, len(ts_all_left))
 permutations_results = np.empty(number_of_permutations)
 fmin, fmax = 8, 12
+tmin, tmax = 0, 1
 con_method = "plv"
 
 diff_permuatation = np.empty([82, 82, number_of_permutations])
 
 
 # diff
-con_normal, freqs_normal, times_normal, n_epochs_normal, n_tapers_normal =\
+con_ctl, freqs_ctl, times_ctl, n_epochs_ctl, n_tapers_ctl =\
         spectral_connectivity(
-            stcs_ent_left,
+            ts_ctl_left,
+            method=con_method,
+            mode='multitaper',
+            sfreq=250,
+            fmin=fmin, fmax=fmax,
+            faverage=True,
+            tmin=tmin, tmax=tmax,
+            mt_adaptive=False,
+            n_jobs=1,
+            verbose=None)
+
+con_ent, freqs_ent, times_ent, n_epochs_ent, n_tapers_ent =\
+        spectral_connectivity(
+            ts_ent_left,
             method=con_method,
             mode='multitaper',
             sfreq=250,
@@ -130,34 +160,19 @@ con_normal, freqs_normal, times_normal, n_epochs_normal, n_tapers_normal =\
             n_jobs=1,
             verbose=None)
 
-con_hyp, freqs_hyp, times_hyp, n_epochs_hyp, n_tapers_hyp =\
-        spectral_connectivity(
-            stcs_ctl_left,
-            method=con_method,
-            mode='multitaper',
-            sfreq=250,
-            fmin=fmin, fmax=fmax,
-            faverage=True,
-            tmin=0, tmax=0.5,
-            mt_adaptive=False,
-            n_jobs=1,
-            verbose=None)
 
-
-diff = con_normal[:, :, 0] - con_hyp[:, :, 0]
-
-
-all_stcs = stcs_ctl_left + stcs_ent_left
+diff = con_ctl[:, :, 0] - con_ent[:, :, 0]
 
 
 for i in range(number_of_permutations):
     np.random.shuffle(index)
-    tmp_ctl = all_stcs[index[:80]]
-    tmp_case = all_stcs[index[80:]]
+    tmp_ctl = ts_all_left[index[:64], :, :]
+    tmp_case = ts_all_left[index[64:], :, :]
 
     con_ctl, freqs_ctl, times_ctl, n_epochs_ctl, n_tapers_ctl =\
         spectral_connectivity(
-             tmp_ctl, method=con_method,
+             tmp_ctl,
+             method=con_method,
              mode='multitaper',
              sfreq=250,
              fmin=fmin, fmax=fmax,
@@ -168,7 +183,8 @@ for i in range(number_of_permutations):
 
     con_case, freqs_case, times_case, n_epochs_case, n_tapers_case =\
         spectral_connectivity(
-             tmp_case, method=con_method,
+             tmp_case,
+             method=con_method,
              mode='multitaper',
              sfreq=250,
              fmin=fmin, fmax=fmax,
