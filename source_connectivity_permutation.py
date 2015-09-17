@@ -90,9 +90,11 @@ inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
 
 # Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels/hemi
-labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Brodmann',
-                                    regexp="Brodmann",
+labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Lobes',
+#                                    regexp="Brodmann",
                                     subjects_dir=subjects_dir)
+
+labels_occ = labels[9:11]
 
 # labels = mne.read_labels_from_annot('subject_1', parc='aparc.DKTatlas40',
 #                                     subjects_dir=subjects_dir)
@@ -108,29 +110,29 @@ for label in labels:
 
 # Extract  time series
 ts_ctl_left = mne.extract_label_time_course(stcs_ctl_left,
-                                            labels,
+                                            labels_occ,
                                             src=inverse_operator["src"],
                                             mode = "mean_flip")
 
 ts_ent_left = mne.extract_label_time_course(stcs_ent_left,
-                                            labels,
+                                            labels_occ,
                                             src=inverse_operator["src"],
                                             mode = "mean_flip")
 
 stcs_all_left = stcs_ctl_left + stcs_ent_left
 ts_all_left = np.asarray(mne.extract_label_time_course(stcs_all_left,
-                                            labels,
+                                            labels_occ,
                                             src=inverse_operator["src"],
                                             mode = "mean_flip"))
 
 number_of_permutations = 2000
 index = np.arange(0, len(ts_all_left))
 permutations_results = np.empty(number_of_permutations)
-fmin, fmax = 8, 12
+fmin, fmax = 7, 12
 tmin, tmax = 0, 1
 con_method = "plv"
 
-diff_permuatation = np.empty([82, 82, number_of_permutations])
+diff_permuatation = np.empty([2, 2, number_of_permutations])
 
 
 # diff
@@ -155,7 +157,7 @@ con_ent, freqs_ent, times_ent, n_epochs_ent, n_tapers_ent =\
             sfreq=250,
             fmin=fmin, fmax=fmax,
             faverage=True,
-            tmin=0, tmax=0.5,
+            tmin=tmin, tmax=tmax,
             mt_adaptive=False,
             n_jobs=1,
             verbose=None)
@@ -165,7 +167,7 @@ diff = con_ctl[:, :, 0] - con_ent[:, :, 0]
 
 
 for i in range(number_of_permutations):
-    np.random.shuffle(index)
+    index = np.random.permutation(index)
     tmp_ctl = ts_all_left[index[:64], :, :]
     tmp_case = ts_all_left[index[64:], :, :]
 
@@ -177,7 +179,7 @@ for i in range(number_of_permutations):
              sfreq=250,
              fmin=fmin, fmax=fmax,
              faverage=True,
-             tmin=0, tmax=0.5,
+             tmin=tmin, tmax=tmax,
              mt_adaptive=False,
              n_jobs=1)
 
@@ -189,14 +191,15 @@ for i in range(number_of_permutations):
              sfreq=250,
              fmin=fmin, fmax=fmax,
              faverage=True,
-             tmin=0, tmax=0.5,
+             tmin=tmin, tmax=tmax,
              mt_adaptive=False,
              n_jobs=1)
 
     diff_permuatation[:, :, i] = con_ctl[:, :, 0] - con_case[:, :, 0]
 
 
-pval = np.empty_like(diff)
+pval = np.sum(np.abs(diff_permuatation[1, 0, :] >=\
+                         np.abs(diff[1,0])))/float(number_of_permutations)
 
 for h in range(diff.shape[0]):
     for j in range(diff.shape[1]):
