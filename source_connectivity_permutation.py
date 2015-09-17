@@ -12,8 +12,7 @@ import mne
 # import pandas as pd
 
 from mne.connectivity import spectral_connectivity
-
-# from mne.stats import fdr_correction
+from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator)
 
 
 # %% Permutation test.
@@ -64,23 +63,31 @@ def permutation_test(a, b, num_samples, statistic):
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/Hyp_meg/scratch/Tone_task_MNE/"
-    subjects_dir = "/home/mje/mnt/Hyp_meg/scratch/fs_subjects_dir/"
+    data_path = "/home/mje/mnt/caa/scratch/"
+    n_jobs = 1
 else:
-    data_path = "/scratch1/MINDLAB2013_18-MEG-HypnosisAnarchicHand/" + \
-                "Tone_task_MNE/"
-    subjects_dir = "/scratch1/MINDLAB2013_18-MEG-HypnosisAnarchicHand/" + \
-                   "fs_subjects_dir"
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+    n_jobs = 1
+
+subjects_dir = data_path + "fs_subjects_dir/"
 
 # change dir to save files the rigth place
 os.chdir(data_path)
 
-# load numpy files
-labelTsHypCrop =\
-    np.load("labels_ts_hyp_press_post_mean-flip_zscore_resample_crop_BA.npy")
-labelTsNormalCrop =\
-    np.load("labels_ts_normal_press_post_mean-flip_" +
-            "zscore_resample_crop_BA.npy")
+
+fname_inv = data_path + '0001-meg-oct-6-inv.fif'
+fname_epochs = data_path + '0001_p_03_filter_ds_ica-mc_tsss-epo.fif'
+fname_evoked = data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss-ave.fif"
+
+# Parameters
+snr = 1.0  # Standard assumption for average data but using it for single trial
+lambda2 = 1.0 / snr ** 2
+
+method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+
+# Load data
+inverse_operator = read_inverse_operator(fname_inv)
+epochs = mne.read_epochs(fname_epochs)
 
 # Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels/hemi
 labels = mne.read_labels_from_annot('subject_1', parc='PALS_B12_Brodmann',
@@ -90,18 +97,21 @@ labels = mne.read_labels_from_annot('subject_1', parc='PALS_B12_Brodmann',
 # labels = mne.read_labels_from_annot('subject_1', parc='aparc.DKTatlas40',
 #                                     subjects_dir=subjects_dir)
 
+for cond in epochs.event_id.keys():
+    stcs = apply_inverse_epochs(epochs[cond], inverse_operator, lambda2,
+                                method, pick_ori="normal")
+    exec("stcs_%s = stcs" % cond)
+
 labels_name = []
 for label in labels:
     labels_name += [label.name]
 
 
-ts_all = np.vstack([labelTsNormalCrop, labelTsHypCrop])
-
 number_of_permutations = 2000
 index = np.arange(0, 154)
 permutations_results = np.empty(number_of_permutations)
 fmin, fmax = 8, 12
-con_method = "wpli"
+con_method = "plv"
 
 diff_permuatation = np.empty([82, 82, number_of_permutations])
 
@@ -109,36 +119,41 @@ diff_permuatation = np.empty([82, 82, number_of_permutations])
 # diff
 con_normal, freqs_normal, times_normal, n_epochs_normal, n_tapers_normal =\
         spectral_connectivity(
-             labelTsNormalCrop, method=con_method,
-             mode='multitaper',
-             sfreq=250,
-             fmin=fmin, fmax=fmax,
-             faverage=True,
-             tmin=0, tmax=0.5,
-             mt_adaptive=False,
-             n_jobs=1,
-             verbose=None)
+            stcs_ent_left,
+            method=con_method,
+            mode='multitaper',
+            sfreq=250,
+            fmin=fmin, fmax=fmax,
+            faverage=True,
+            tmin=0, tmax=0.5,
+            mt_adaptive=False,
+            n_jobs=1,
+            verbose=None)
 
 con_hyp, freqs_hyp, times_hyp, n_epochs_hyp, n_tapers_hyp =\
         spectral_connectivity(
-             labelTsHypCrop, method=con_method,
-             mode='multitaper',
-             sfreq=250,
-             fmin=fmin, fmax=fmax,
-             faverage=True,
-             tmin=0, tmax=0.5,
-             mt_adaptive=False,
-             n_jobs=1,
-             verbose=None)
+            stcs_ctl_left,
+            method=con_method,
+            mode='multitaper',
+            sfreq=250,
+            fmin=fmin, fmax=fmax,
+            faverage=True,
+            tmin=0, tmax=0.5,
+            mt_adaptive=False,
+            n_jobs=1,
+            verbose=None)
 
 
 diff = con_normal[:, :, 0] - con_hyp[:, :, 0]
 
 
+all_stcs = stcs_ctl_left + stcs_ent_left
+
+
 for i in range(number_of_permutations):
     np.random.shuffle(index)
-    tmp_ctl = ts_all[index[:80]]
-    tmp_case = ts_all[index[80:]]
+    tmp_ctl = all_stcs[index[:80]]
+    tmp_case = all_stcs[index[80:]]
 
     con_ctl, freqs_ctl, times_ctl, n_epochs_ctl, n_tapers_ctl =\
         spectral_connectivity(
