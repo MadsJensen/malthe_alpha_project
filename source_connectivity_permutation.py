@@ -130,7 +130,7 @@ index = np.arange(0, len(ts_all_left))
 permutations_results = np.empty(number_of_permutations)
 fmin, fmax = 7, 12
 tmin, tmax = 0, 1
-con_method = "plv"
+con_method = "wpli"
 
 diff_permuatation = np.empty([2, 2, number_of_permutations])
 
@@ -198,7 +198,7 @@ for i in range(number_of_permutations):
     diff_permuatation[:, :, i] = con_ctl[:, :, 0] - con_case[:, :, 0]
 
 
-pval = np.sum(np.abs(diff_permuatation[1, 0, :] >=\
+pval = np.sum(np.abs(diff_permuatation[1, 0, :] >=
                          np.abs(diff[1,0])))/float(number_of_permutations)
 
 for h in range(diff.shape[0]):
