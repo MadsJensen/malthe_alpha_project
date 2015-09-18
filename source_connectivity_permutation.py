@@ -15,7 +15,7 @@ from mne.connectivity import spectral_connectivity
 from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator)
 
 
-# %% Permutation test.
+#  Permutation test.
 def permutation_resampling(case, control, num_samples, statistic):
     """
     Permutation test.
@@ -59,7 +59,7 @@ def permutation_test(a, b, num_samples, statistic):
     return pval, observed_diff, diffs
 
 
-# %% Setup paths and prepare raw data
+# Setup paths and prepare raw data
 hostname = socket.gethostname()
 
 if hostname == "Wintermute":
@@ -90,11 +90,12 @@ inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
 
 # Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels/hemi
-labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Lobes',
-#                                    regexp="Brodmann",
+#labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Lobes',
+labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Brodmann',
+                                    regexp="Brodmann",
                                     subjects_dir=subjects_dir)
 
-labels_occ = labels[9:11]
+labels_occ = labels[6:12]
 
 # labels = mne.read_labels_from_annot('subject_1', parc='aparc.DKTatlas40',
 #                                     subjects_dir=subjects_dir)
@@ -104,8 +105,9 @@ for cond in epochs.event_id.keys():
                                 method, pick_ori="normal")
     exec("stcs_%s = stcs" % cond)
 
-labels_name = []
-for label in labels:
+labels_name = [label.name for label in labels_occ]
+
+for label in labels_occ:
     labels_name += [label.name]
 
 # Extract  time series
@@ -130,9 +132,9 @@ index = np.arange(0, len(ts_all_left))
 permutations_results = np.empty(number_of_permutations)
 fmin, fmax = 7, 12
 tmin, tmax = 0, 1
-con_method = "wpli"
+con_method = "plv"
 
-diff_permuatation = np.empty([2, 2, number_of_permutations])
+diff_permuatation = np.empty([6, 6, number_of_permutations])
 
 
 # diff
@@ -198,12 +200,14 @@ for i in range(number_of_permutations):
     diff_permuatation[:, :, i] = con_ctl[:, :, 0] - con_case[:, :, 0]
 
 
-pval = np.sum(np.abs(diff_permuatation[1, 0, :] >=
-                         np.abs(diff[1,0])))/float(number_of_permutations)
+pval = np.empty_like(diff)
 
 for h in range(diff.shape[0]):
     for j in range(diff.shape[1]):
         if diff[h, j] != 0:
-            pval[h, j] = np.sum(np.abs(diff[h, j]) >= np.abs(
-                diff_permuatation[h, j, :]))\
-                 / float(number_of_permutations)
+            pval[h, j] = np.sum(np.abs(diff_permuatation[h, h, :] >=
+                         np.abs(diff[h, j, :])))/float(number_of_permutations)
+
+#            np.sum(np.abs(diff[h, j]) >= np.abs(
+#                diff_permuatation[h, j, :]))\
+#                 / float(number_of_permutations)
