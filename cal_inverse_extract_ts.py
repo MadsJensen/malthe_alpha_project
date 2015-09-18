@@ -13,7 +13,7 @@ import socket
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
+#import seaborn as sns
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
@@ -55,9 +55,16 @@ evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
 mne.viz.plot_evoked_topo([evokeds[2], evokeds[0]],
                          color=['r', 'g'])
 
-# Right ctl, left ent & diff
-mne.viz.plot_evoked_topo([evokeds[3], evokeds[1]],
-                         color=['red', 'white'])
+# topoplot all conditions
+colors = "blue", "green", 'red', 'm'
+mne.viz.plot_evoked_topo([evokeds[0], evokeds[1], evokeds[2], evokeds[3]],
+                         color=colors)
+
+conditions = [e.comment for e in evokeds]
+for cond, col, pos in zip(conditions, colors, (0.02, 0.07, 0.12, 0.17)):
+    plt.figtext(0.97, pos, cond, color=col, fontsize=12,
+                horizontalalignment='right')
+
 
 
 # Get evoked data (averaging across trials in sensor space)
@@ -210,11 +217,28 @@ for j, label in enumerate([labels[9], labels[10], labels[9]+labels[10]]):
         exec("BP_%s_%s = stcs['alpha']" % (cond, l_name))
 
 
+# difference waves plots
+super_ctl = (BP_ctl_left_OCCIPITAL_lh.data.mean(axis=0) + 
+             BP_ctl_right_OCCIPITAL_rh.data.mean(axis=0)) -\
+             (BP_ctl_left_OCCIPITAL_rh.data.mean(axis=0) + 
+             BP_ctl_right_OCCIPITAL_lh.data.mean(axis=0))
+
+super_ent = (BP_ent_left_OCCIPITAL_lh.data.mean(axis=0) + 
+             BP_ent_right_OCCIPITAL_rh.data.mean(axis=0)) -\
+             (BP_ent_left_OCCIPITAL_rh.data.mean(axis=0) + 
+             BP_ent_right_OCCIPITAL_lh.data.mean(axis=0))
+
+times = BP_ctl_left_OCCIPITAL_lh.times
+
+plt.figure()
+plt.plot(times, super_ctl, 'r', linewidth=2, label="joint ctl")
+plt.plot(times, super_ent, 'b', linewidth=2, label="joint ent")
+
 plt.legend()
-plt.title("label: %s" % label.name)
+plt.title("Joint power difference waves (power)")
 plt.ylabel("zscore")
 plt.xlabel("Time (seconds)")
-plt.savefig("%s_BP_alpha.png" % label.name)
+#plt.savefig("%s_BP_alpha.png" % label.name)
  
     plt.figure()
     plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
