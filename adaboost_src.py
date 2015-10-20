@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 # from sklearn.tree import DecisionTreeClassifier
 # from sklearn.metrics import confusion_matrix
-from sklearn.cross_validation import cross_val_score
+from sklearn.cross_validation import StratifiedKFold
 # import seaborn as sns
 
 # Setup paths and prepare raw data
@@ -24,7 +24,6 @@ else:
     n_jobs = 1
 
 subjects_dir = data_path + "fs_subjects_dir/"
-
 
 fname_inv = data_path + '0001-meg-oct-6-inv.fif'
 fname_epochs = data_path + '0001_p_03_filter_ds_ica-mc_tsss-epo.fif'
@@ -53,8 +52,38 @@ src_ent_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ent_left])
 X = np.vstack([src_ctl_l, src_ent_l])
 y = np.concatenate([np.zeros(64), np.ones(64)])
 
-
+# Setup classificer
 bdt = AdaBoostClassifier(algorithm="SAMME.R",
                          n_estimators=1000)
 
-scores_10 = cross_val_score(bdt, X, y, cv=10, n_jobs=1, verbose=False)
+n_folds = 10
+cv = StratifiedKFold(y, n_folds=n_folds)
+
+scores = np.zeros(n_folds)
+feature_importance = np.zeros(stc.data.shape)
+
+for ii, (train, test) in enumerate(cv):
+    bdt.fit(X[train], y[train])
+    y_pred = bdt.predict(X[test])
+    y_test = y[test]
+    scores[ii] = np.sum(y_pred == y_test) / float(len(y_test))
+    feature_importance += bdt.feature_importances_.reshape(stc.data.shape)
+
+feature_importance /= (ii + 1)  # create average importance
+# create mask to avoid division error
+feature_importance = np.ma.masked_array(feature_importance,
+                                        feature_importance == 0)
+# normalize scores for visualization purposes
+feature_importance /= feature_importance.std(axis=1)[:, None]
+feature_importance -= feature_importance.mean(axis=1)[:, None]
+
+vertices = [stc.lh_vertno, stc.rh_vertno]
+
+stc_feat = mne.SourceEstimate(feature_importance, vertices=vertices,
+                              tmin=0, tstep=stc.tstep,
+                              subject='0001')
+
+stc_feat.save(data_path + "stc_adaboost_feature")
+
+
+# scores_10 = cross_val_score(bdt, X, y, cv=10, n_jobs=1, verbose=False)
