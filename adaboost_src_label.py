@@ -56,20 +56,25 @@ stcs_ent_left = apply_inverse_epochs(epochs["ent_left"], inverse_operator,
 stcs_ctl_left = apply_inverse_epochs(epochs["ctl_left"], inverse_operator,
                                      lambda2, method, pick_ori="normal")
 
-src_ctl_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ctl_left])
-src_ent_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ent_left])
+#src_ctl_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ctl_left])
+#src_ent_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ent_left])
 
-data_ctl_l = np.squeeze(np.asarray(
-    mne.extract_label_time_course(stcs_ctl_left,
-                                  labels_occ[1],
-                                  inverse_operator["src"],
-                                  mode="pca_flip")))
+#data_ctl_l = np.squeeze(np.asarray(
+#    mne.extract_label_time_course(stcs_ctl_left,
+#                                  labels_occ[1],
+#                                  inverse_operator["src"],
+#                                  mode="pca_flip")))
+#
+#data_ent_l = np.squeeze(np.asarray(
+#    mne.extract_label_time_course(stcs_ent_left,
+#                                  labels_occ[1],
+#                                  inverse_operator["src"],
+#                                  mode="pca_flip")))
 
-data_ent_l = np.squeeze(np.asarray(
-    mne.extract_label_time_course(stcs_ent_left,
-                                  labels_occ[1],
-                                  inverse_operator["src"],
-                                  mode="pca_flip")))
+data_ent_l = np.asarray([stc.in_label(labels_occ[1]).data.reshape(-1)
+              for stc in stcs_ent_left])
+data_ctl_l = [stc.in_label(labels_occ[1]).data.reshape(-1)
+              for stc in stcs_ctl_left]
 
 X = np.vstack([data_ctl_l, data_ent_l])  # data for classiication
 y = np.concatenate([np.zeros(64), np.ones(64)])  # Classes for X
@@ -101,15 +106,17 @@ feature_importance /= (ii + 1)  # create average importance
 # feature_importance /= feature_importance.std(axis=1)[:, None]
 # feature_importance -= feature_importance.mean(axis=1)[:, None]
 
-vertices = [stc.lh_vertno, stc.rh_vertno]
+vertices = [np.array([], int), stc.in_label(labels_occ[1]).rh_vertno]
+shape = stcs_ent_left[0].in_label(labels_occ[1]).shape
 
-stc_feat = mne.SourceEstimate(feature_importance, vertices=vertices,
+stc_feat = mne.SourceEstimate(feature_importance.reshape(shape), vertices=vertices,
                               tmin=0, tstep=stc.tstep,
                               subject='0001')
 
 stc_feat.save(data_path + "stc_adaboost_feature_label")
 
-stc_feat_std = mne.SourceEstimate(feature_importance_std, vertices=vertices,
+stc_feat_std = mne.SourceEstimate(feature_importance_std.reshape(shape),
+                                  vertices=vertices,
                                   tmin=0, tstep=stc.tstep,
                                   subject='0001')
 
