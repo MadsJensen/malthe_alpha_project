@@ -82,7 +82,7 @@ n_folds = 10  # number of folds used in cv
 cv = StratifiedKFold(y, n_folds=n_folds)
 
 scores = np.zeros(n_folds)  # aaray to save scores
-feature_importance = np.zeros(stc.data.shape)  # array to save features
+feature_importance = np.zeros(X.shape[1])  # array to save features
 
 for ii, (train, test) in enumerate(cv):
     bdt.fit(X[train], y[train])
