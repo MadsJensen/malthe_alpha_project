@@ -89,7 +89,7 @@ for ii, (train, test) in enumerate(cv):
     y_pred = bdt.predict(X[test])
     y_test = y[test]
     scores[ii] = np.sum(y_pred == y_test) / float(len(y_test))
-    feature_importance += bdt.feature_importances_.reshape(stc.data.shape)
+    feature_importance += bdt.feature_importances_
 
 feature_importance_std = scale(feature_importance)
 feature_importance /= (ii + 1)  # create average importance
