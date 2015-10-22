@@ -11,6 +11,7 @@ from sklearn.ensemble import AdaBoostClassifier
 # from sklearn.tree import DecisionTreeClassifier
 # from sklearn.metrics import confusion_matrix
 from sklearn.cross_validation import StratifiedKFold
+from sklearn.preprocessing import scale
 # import seaborn as sns
 
 # Setup paths and prepare raw data
@@ -90,13 +91,15 @@ for ii, (train, test) in enumerate(cv):
     scores[ii] = np.sum(y_pred == y_test) / float(len(y_test))
     feature_importance += bdt.feature_importances_.reshape(stc.data.shape)
 
+feature_importance_std = scale(feature_importance)
 feature_importance /= (ii + 1)  # create average importance
-# create mask to avoid division error
-feature_importance = np.ma.masked_array(feature_importance,
-                                        feature_importance == 0)
-# normalize scores for visualization purposes
-feature_importance /= feature_importance.std(axis=1)[:, None]
-feature_importance -= feature_importance.mean(axis=1)[:, None]
+
+# # create mask to avoid division error
+# feature_importance = np.ma.masked_array(feature_importance,
+#                                         feature_importance == 0)
+# # normalize scores for visualization purposes
+# feature_importance /= feature_importance.std(axis=1)[:, None]
+# feature_importance -= feature_importance.mean(axis=1)[:, None]
 
 vertices = [stc.lh_vertno, stc.rh_vertno]
 
@@ -106,5 +109,12 @@ stc_feat = mne.SourceEstimate(feature_importance, vertices=vertices,
 
 stc_feat.save(data_path + "stc_adaboost_feature_label")
 
+stc_feat_std = mne.SourceEstimate(feature_importance_std, vertices=vertices,
+                                  tmin=0, tstep=stc.tstep,
+                                  subject='0001')
+
+stc_feat_std.save(data_path + "stc_adaboost_feature_label_std")
+
+np.savetxt(data_path + "adaboost_label_scores.csv", scores, delimiter=",")
 
 # scores_10 = cross_val_score(bdt, X, y, cv=10, n_jobs=1, verbose=False)
