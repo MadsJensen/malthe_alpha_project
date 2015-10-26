@@ -53,6 +53,9 @@ epochs.resample(200)
 stcs_ent_left = apply_inverse_epochs(epochs["ent_left"], inverse_operator,
                                      lambda2, method, pick_ori="normal")
 
+stcs_ent_right = apply_inverse_epochs(epochs["ent_right"], inverse_operator,
+                                     lambda2, method, pick_ori="normal")
+
 stcs_ctl_left = apply_inverse_epochs(epochs["ctl_left"], inverse_operator,
                                      lambda2, method, pick_ori="normal")
 
@@ -73,11 +76,14 @@ stcs_ctl_left = apply_inverse_epochs(epochs["ctl_left"], inverse_operator,
 
 data_ent_l = np.asarray([stc.in_label(labels_occ[1]).data.reshape(-1)
               for stc in stcs_ent_left])
-data_ctl_l = [stc.in_label(labels_occ[1]).data.reshape(-1)
-              for stc in stcs_ctl_left]
+data_ent_r = np.asarray([stc.in_label(labels_occ[1]).data.reshape(-1)
+                         for stc in stcs_ent_right])
+# data_ctl_l = [stc.in_label(labels_occ[1]).data.reshape(-1)
+#              for stc in stcs_ctl_left]
 
-X = np.vstack([data_ctl_l, data_ent_l])  # data for classiication
-y = np.concatenate([np.zeros(64), np.ones(64)])  # Classes for X
+X = np.vstack([data_ent_l, data_ent_r])  # data for classiication
+ # Classes for X 
+y = np.concatenate([np.zeros(len(data_ent_l)), np.ones(len(data_ent_r))]) 
 
 # Setup classificer
 bdt = AdaBoostClassifier(algorithm="SAMME.R",
@@ -113,15 +119,15 @@ stc_feat = mne.SourceEstimate(feature_importance.reshape(shape), vertices=vertic
                               tmin=0, tstep=stc.tstep,
                               subject='0001')
 
-stc_feat.save(data_path + "stc_adaboost_feature_label")
+stc_feat.save(data_path + "stc_adaboost_feature_label_LvR")
 
 stc_feat_std = mne.SourceEstimate(feature_importance_std.reshape(shape),
                                   vertices=vertices,
                                   tmin=0, tstep=stc.tstep,
                                   subject='0001')
 
-stc_feat_std.save(data_path + "stc_adaboost_feature_label_std")
+stc_feat_std.save(data_path + "stc_adaboost_feature_label_std_LvR")
 
-np.savetxt(data_path + "adaboost_label_scores.csv", scores, delimiter=",")
+np.savetxt(data_path + "adaboost_label_scores_LvR.csv", scores, delimiter=",")
 
 # scores_10 = cross_val_score(bdt, X, y, cv=10, n_jobs=1, verbose=False)
