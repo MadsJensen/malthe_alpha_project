@@ -24,7 +24,7 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-    n_jobs = 1
+    n_jobs = 4
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
@@ -128,7 +128,7 @@ for j in range(len(meta_score)):
 
     n_folds = 10  # number of folds used in cv
     cv = StratifiedKFold(y, n_folds=n_folds)
-    scores = cross_val_score(bdt, X, y, cv=cv)
+    scores = cross_val_score(bdt, X, y, cv=cv, n_jobs=n_jobs)
     meta_score[j] = scores.mean()
     print " for n_esti: %d score: %d" % (n_estimators[j], scores.mean())
 
