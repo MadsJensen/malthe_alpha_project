@@ -55,7 +55,7 @@ pow_ent_right = []
 pow_ctl_left = []
 
 for i in range(len(epochs["ent_left"])):
-    print "Trial %d of %d" %( i + 1, len(epochs["ent_left"]) + 1)
+    print "Trial %d of %d" % (i + 1, len(epochs["ent_left"]) + 1)
     tmp_pow = source_band_induced_power(epochs["ent_left"][i],
                                         inverse_operator,
                                         bands=dict(alpha=[8, 12]),
@@ -70,7 +70,7 @@ for i in range(len(epochs["ent_left"])):
     pow_ent_left.append(tmp_pow["alpha"])
 
 for i in range(len(epochs["ent_right"])):
-    print "Trial %d of %d" %( i + 1, len(epochs["ent_right"]) + 1)
+    print "Trial %d of %d" % (i + 1, len(epochs["ent_right"]) + 1)
     tmp_pow = source_band_induced_power(epochs["ent_right"][i],
                                         inverse_operator,
                                         bands=dict(alpha=[8, 12]),
@@ -85,7 +85,7 @@ for i in range(len(epochs["ent_right"])):
     pow_ent_right.append(tmp_pow["alpha"])
 
 for i in range(len(epochs["ctl_left"])):
-    print "Trial %d of %d" %( i + 1, len(epochs["ctl_left"]) + 1)
+    print "Trial %d of %d" % (i + 1, len(epochs["ctl_left"]) + 1)
     tmp_pow = source_band_induced_power(epochs["ctl_left"][i],
                                         inverse_operator,
                                         bands=dict(alpha=[8, 12]),
@@ -130,7 +130,7 @@ for j in range(len(meta_score)):
     cv = StratifiedKFold(y, n_folds=n_folds)
     scores = cross_val_score(bdt, X, y, cv=cv)
     meta_score[j] = scores.mean()
-    print " for n_esti: %d score: %d" %(n_estimators[j], scores.mean())
+    print " for n_esti: %d score: %d" % (n_estimators[j], scores.mean())
 
     # scores = np.zeros(n_folds)  # aaray to save scores
     # feature_importance = np.zeros(X.shape[1])  # array to save features
