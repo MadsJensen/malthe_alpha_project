@@ -24,7 +24,7 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-    n_jobs = 4
+    n_jobs = 6
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
@@ -118,19 +118,21 @@ y = np.concatenate([np.zeros(len(data_ctl_l)),
                     np.ones(len(data_ent_l))])
 
 
-n_estimators = np.arange(100, 1000, 100)
+n_estimators = np.arange(500, 1000, 100)
 meta_score = np.empty_like(n_estimators)
+
+n_folds = 10  # number of folds used in cv
+cv = StratifiedKFold(y, n_folds=n_folds)
 
 for j in range(len(meta_score)):
     # Setup classificer
     bdt = AdaBoostClassifier(algorithm="SAMME.R",
                              n_estimators=n_estimators[j])
 
-    n_folds = 10  # number of folds used in cv
-    cv = StratifiedKFold(y, n_folds=n_folds)
-    scores = cross_val_score(bdt, X, y, cv=cv, n_jobs=n_jobs)
+    scores = cross_val_score(bdt, X, y, scoring="accuracy",
+                             cv=cv, n_jobs=n_jobs)
     meta_score[j] = scores.mean()
-    print " for n_est: %d score: %d" % (n_estimators[j], scores.mean())
+    print " for n_est: %d score: %f" % (n_estimators[j], scores.mean())
 
     # scores = np.zeros(n_folds)  # aaray to save scores
     # feature_importance = np.zeros(X.shape[1])  # array to save features
