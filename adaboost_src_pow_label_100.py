@@ -1,7 +1,8 @@
 """Doc string Here."""
 
 import mne
-from mne.minimum_norm import (read_inverse_operator, source_band_induced_power)
+from mne.minimum_norm import (read_inverse_operator,
+                              source_band_induced_power)
 
 import socket
 import numpy as np
@@ -45,40 +46,81 @@ labels_occ = [labels[9], labels[10]]
 inverse_operator = read_inverse_operator(fname_inv)
 epochs = mne.read_epochs(fname_epochs)
 
-epochs.crop(0, 1.1)
+epochs.crop(None, 1.1)
 epochs.resample(200)
 
-pow_ent_left = source_induced_power(epochs["ent_left"], inverse_operator,
-                                     lambda2, method, pick_ori="normal")
 
-pow_ctl_left = source_induced_power(epochs["ctl_left"], inverse_operator,
-                                     lambda2, method, pick_ori="normal")
+pow_ent_left = []
+pow_ent_right = []
+pow_ctl_left = []
 
-# src_ctl_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ctl_left])
-# src_ent_l = np.asarray([stc.data.reshape(-1) for stc in stcs_ent_left])
+for i in range(len(epochs["ent_left"])):
+    print "Trial %d of %d" %( i + 1, len(epochs["ent_left"]) + 1)
+    tmp_pow = source_band_induced_power(epochs["ent_left"][i],
+                                        inverse_operator,
+                                        bands=dict(alpha=[8, 12]),
+                                        label=labels_occ[1],
+                                        lambda2=lambda2,
+                                        method=method,
+                                        n_cycles=4,
+                                        baseline=(None, 0),
+                                        baseline_mode="zscore",
+                                        pca=True,
+                                        n_jobs=1)
+    pow_ent_left.append(tmp_pow["alpha"])
 
-# data_ctl_l = np.squeeze(np.asarray(
-#    mne.extract_label_time_course(stcs_ctl_left,
-#                                  labels_occ[1],
-#                                  inverse_operator["src"],
-#                                  mode="pca_flip")))
-#
-# data_ent_l = np.squeeze(np.asarray(
-#    mne.extract_label_time_course(stcs_ent_left,
-#                                  labels_occ[1],
-#                                  inverse_operator["src"],
-#                                  mode="pca_flip")))
+for i in range(len(epochs["ent_right"])):
+    print "Trial %d of %d" %( i + 1, len(epochs["ent_right"]) + 1)
+    tmp_pow = source_band_induced_power(epochs["ent_right"][i],
+                                        inverse_operator,
+                                        bands=dict(alpha=[8, 12]),
+                                        label=labels_occ[1],
+                                        lambda2=lambda2,
+                                        method=method,
+                                        n_cycles=4,
+                                        baseline=(None, 0),
+                                        baseline_mode="zscore",
+                                        pca=True,
+                                        n_jobs=1)
+    pow_ent_right.append(tmp_pow["alpha"])
 
-data_ent_l = np.asarray([stc.in_label(labels_occ[1]).data.reshape(-1)
-                        for stc in stcs_ent_left])
-data_ctl_l = [stc.in_label(labels_occ[1]).data.reshape(-1)
-              for stc in stcs_ctl_left]
+for i in range(len(epochs["ctl_left"])):
+    print "Trial %d of %d" %( i + 1, len(epochs["ctl_left"]) + 1)
+    tmp_pow = source_band_induced_power(epochs["ctl_left"][i],
+                                        inverse_operator,
+                                        bands=dict(alpha=[8, 12]),
+                                        label=labels_occ[1],
+                                        lambda2=lambda2,
+                                        method=method,
+                                        n_cycles=4,
+                                        baseline=(None, 0),
+                                        baseline_mode="zscore",
+                                        pca=True,
+                                        n_jobs=1)
+    pow_ctl_left.append(tmp_pow["alpha"])
 
-X = np.vstack([data_ctl_l, data_ent_l])  # data for classiication
-y = np.concatenate([np.zeros(64), np.ones(64)])  # Classes for X
+# Remove baseline from stcs
+pow_ent_left = [stc.crop(0, None) for stc in pow_ent_left]
+pow_ent_right = [stc.crop(0, None) for stc in pow_ent_right]
+pow_ctl_left = [stc.crop(0, None) for stc in pow_ctl_left]
 
-n_estimators = np.arange(100, 1000, 100)
+# Convewrt NxM matrices
+data_ent_l = np.asarray([stc.data.reshape(-1)
+                        for stc in pow_ent_left])
+data_ent_r = np.asarray([stc.data.reshape(-1)
+                        for stc in pow_ent_right])
+data_ctl_l = np.asarray([stc.data.reshape(-1)
+                         for stc in pow_ctl_left])
+
+X = np.vstack([data_ctl_l, data_ent_l, data_ent_r])  # data for classiication
+# Classes for X
+y = np.concatenate([np.zeros(len(data_ctl_l)),
+                    np.ones(len(data_ent_l)),
+                    np.ones(len(data_ent_r))])
+
+n_estimators = np.arange(100, 500, 10)
 meta_score = np.empty_like(n_estimators)
+
 for j in range(len(meta_score)):
     # Setup classificer
     bdt = AdaBoostClassifier(algorithm="SAMME.R",
@@ -86,8 +128,9 @@ for j in range(len(meta_score)):
 
     n_folds = 10  # number of folds used in cv
     cv = StratifiedKFold(y, n_folds=n_folds)
-    scores = cross_val_score(X, y, cv=cv)
+    scores = cross_val_score(bdt, X, y, cv=cv)
     meta_score[j] = scores.mean()
+    print " for n_esti: %d score: %d" %(n_estimators[j], scores.mean())
 
     # scores = np.zeros(n_folds)  # aaray to save scores
     # feature_importance = np.zeros(X.shape[1])  # array to save features
