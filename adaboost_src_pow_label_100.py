@@ -66,7 +66,7 @@ for i in range(len(epochs["ent_left"])):
                                         baseline=(None, 0),
                                         baseline_mode="zscore",
                                         pca=True,
-                                        n_jobs=1)
+                                        n_jobs=n_jobs)
     pow_ent_left.append(tmp_pow["alpha"])
 
 for i in range(len(epochs["ent_right"])):
@@ -81,7 +81,7 @@ for i in range(len(epochs["ent_right"])):
                                         baseline=(None, 0),
                                         baseline_mode="zscore",
                                         pca=True,
-                                        n_jobs=1)
+                                        n_jobs=n_jobs)
     pow_ent_right.append(tmp_pow["alpha"])
 
 for i in range(len(epochs["ctl_left"])):
@@ -96,7 +96,7 @@ for i in range(len(epochs["ctl_left"])):
                                         baseline=(None, 0),
                                         baseline_mode="zscore",
                                         pca=True,
-                                        n_jobs=1)
+                                        n_jobs=n_jobs)
     pow_ctl_left.append(tmp_pow["alpha"])
 
 # Remove baseline from stcs
@@ -112,13 +112,13 @@ data_ent_r = np.asarray([stc.data.reshape(-1)
 data_ctl_l = np.asarray([stc.data.reshape(-1)
                          for stc in pow_ctl_left])
 
-X = np.vstack([data_ctl_l, data_ent_l, data_ent_r])  # data for classiication
+X = np.vstack([data_ctl_l, data_ent_l])  # data for classiication
 # Classes for X
 y = np.concatenate([np.zeros(len(data_ctl_l)),
-                    np.ones(len(data_ent_l)),
-                    np.ones(len(data_ent_r))])
+                    np.ones(len(data_ent_l))])
 
-n_estimators = np.arange(100, 500, 10)
+
+n_estimators = np.arange(100, 1000, 100)
 meta_score = np.empty_like(n_estimators)
 
 for j in range(len(meta_score)):
@@ -130,7 +130,7 @@ for j in range(len(meta_score)):
     cv = StratifiedKFold(y, n_folds=n_folds)
     scores = cross_val_score(bdt, X, y, cv=cv, n_jobs=n_jobs)
     meta_score[j] = scores.mean()
-    print " for n_esti: %d score: %d" % (n_estimators[j], scores.mean())
+    print " for n_est: %d score: %d" % (n_estimators[j], scores.mean())
 
     # scores = np.zeros(n_folds)  # aaray to save scores
     # feature_importance = np.zeros(X.shape[1])  # array to save features
