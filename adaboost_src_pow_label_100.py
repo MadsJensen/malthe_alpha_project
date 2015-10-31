@@ -24,7 +24,7 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-    n_jobs = 1
+    n_jobs = 4
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
