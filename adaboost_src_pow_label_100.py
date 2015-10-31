@@ -24,11 +24,7 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-<<<<<<< HEAD
-    n_jobs = 4
-=======
     n_jobs = 6
->>>>>>> 45ca9cf86895ae801973c6729b8a4d9fce2b5c92
 
 subjects_dir = data_path + "fs_subjects_dir/"
 
@@ -56,7 +52,7 @@ epochs.resample(200)
 
 pow_ent_left = []
 pow_ent_right = []
-pow_ctl_left = []
+pow_ctl_left = [] 
 
 for i in range(len(epochs["ent_left"])):
     print "Trial %d of %d" % (i + 1, len(epochs["ent_left"]) + 1)
@@ -109,11 +105,11 @@ pow_ent_right = [stc.crop(0, None) for stc in pow_ent_right]
 pow_ctl_left = [stc.crop(0, None) for stc in pow_ctl_left]
 
 # Convewrt NxM matrices
-data_ent_l = np.asarray([stc.data.reshape(-1)
+data_ent_l = np.asarray([stc.data.mean(axis=0)
                         for stc in pow_ent_left])
-data_ent_r = np.asarray([stc.data.reshape(-1)
+data_ent_r = np.asarray([stc.data.mean(axis=0)
                         for stc in pow_ent_right])
-data_ctl_l = np.asarray([stc.data.reshape(-1)
+data_ctl_l = np.asarray([stc.data.mean(axis=0)
                          for stc in pow_ctl_left])
 
 X = np.vstack([data_ctl_l, data_ent_l])  # data for classiication
@@ -136,11 +132,8 @@ for j in range(len(meta_score)):
     scores = cross_val_score(bdt, X, y, scoring="accuracy",
                              cv=cv, n_jobs=n_jobs)
     meta_score[j] = scores.mean()
-<<<<<<< HEAD
-    print " for n_esti: %d score: %d" % (n_estimators[j], scores.mean())
-=======
     print " for n_est: %d score: %f" % (n_estimators[j], scores.mean())
->>>>>>> 45ca9cf86895ae801973c6729b8a4d9fce2b5c92
+
 
     # scores = np.zeros(n_folds)  # aaray to save scores
     # feature_importance = np.zeros(X.shape[1])  # array to save features
