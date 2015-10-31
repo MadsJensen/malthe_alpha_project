@@ -124,7 +124,7 @@ cv = StratifiedKFold(y, n_folds=n_folds)
 
 # Setup classificer
 bdt = AdaBoostClassifier(algorithm="SAMME.R",
-                         n_estimators=100)
+                         n_estimators=200)
 
 scores = np.zeros(n_folds)  # aaray to save scores
 feature_importance = np.zeros(X.shape[1])  # array to save features
@@ -149,18 +149,19 @@ feature_importance /= (ii + 1)  # create average importance
 vertices = [np.array([], int), stc.in_label(labels_occ[1]).rh_vertno]
 shape = pow_ent_left[0].in_label(labels_occ[1]).shape
 
-stc_feat = mne.SourceEstimate(feature_importance.reshape(shape),
-                              vertices=vertices,
-                              tmin=0, tstep=stc.tstep,
-                              subject='0001')
+# stc_feat = mne.SourceEstimate(feature_importance.reshape(shape),
+#                              vertices=vertices,
+#                              tmin=0, tstep=stc.tstep,
+#                             subject='0001')
 
-stc_feat.save(data_path + "stc_adaboost_feature_label_LvR")
+# stc_feat.save(data_path + "stc_adaboost_feature_label_LvR")
 
-stc_feat_std = mne.SourceEstimate(feature_importance_std.reshape(shape),
-                                  vertices=vertices,
-                                  tmin=0, tstep=stc.tstep,
-                                  subject='0001')
+# stc_feat_std = mne.SourceEstimate(feature_importance_std.reshape(shape),
+#                                  vertices=vertices,
+#                                  tmin=0, tstep=stc.tstep,
+#                                  subject='0001')
 
-stc_feat_std.save(data_path + "stc_adaboost_feature_label_std_LvR")
+# stc_feat_std.save(data_path + "stc_adaboost_feature_label_std_LvR")
 
-np.savetxt(data_path + "adaboost_label_scores_LvR.csv", scores, delimiter=",")
+np.savetxt(data_path + "adaboost_label_scores_LvR_mean_200.csv",
+           scores, delimiter=",")
