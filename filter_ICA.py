@@ -61,7 +61,7 @@ title = 'Sources related to %s artifacts (red)'
 
 # generate ECG epochs use detection via phase statistics
 
-ecg_epochs = create_ecg_epochs(raw, ch_name="EOG006",
+ecg_epochs = create_ecg_epochs(raw, ch_name="ECG002",
                                tmin=-.5, tmax=.5, picks=picks)
 
 ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
@@ -80,7 +80,7 @@ if ecg_inds:
 # detect EOG by correlation
 
 
-eog_epochs = create_eog_epochs(raw, ch_name="EOG004")
+eog_epochs = create_eog_epochs(raw, ch_name="EOG001")
 
 eog_inds, scores = ica.find_bads_eog(raw)
 ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
