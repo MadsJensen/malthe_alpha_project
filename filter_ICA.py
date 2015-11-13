@@ -21,7 +21,7 @@ if hostname == "Wintermute":
     n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-    n_jobs = 1
+    n_jobs = 3
 
 
 raw = Raw(data_path + "subj_2_tsss-mc_autobad-raw.fif", preload=True)
@@ -137,6 +137,5 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save("0001_p_03_ica-mc_raw_tsss.fif",
+raw_ica.save("subj_2_filter_ica-mc_raw_tsss.fif",
              overwrite=True)
- 
