@@ -25,7 +25,10 @@ else:
 
 
 raw = Raw(data_path + "subj_2_tsss-mc_autobad-raw.fif", preload=True)
+raw2 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-1.fif", preload=True)
+raw3 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-2.fif", preload=True)
 
+raw.append([raw2, raw3])
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
               mag=4e-12  # T (magnetometers)
