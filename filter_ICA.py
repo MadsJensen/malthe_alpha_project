@@ -24,9 +24,9 @@ else:
     n_jobs = 3
 
 
-raw = Raw(data_path + "subj_2_tsss-mc_autobad-raw.fif", preload=True)
-raw2 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-1.fif", preload=True)
-raw3 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-2.fif", preload=True)
+raw = Raw(data_path + "subj_2_ds_filter_raw_tsss.fif", preload=False)
+# raw2 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-1.fif", preload=True)
+# raw3 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-2.fif", preload=True)
 
 raw.append([raw2, raw3])
 
@@ -38,9 +38,9 @@ reject = dict(grad=4000e-13,  # T / m (gradiometers)
 #raw_orig = raw.copy()
 
 # raw.resample(400, n_jobs=n_jobs)
-raw.filter(1, 98, n_jobs=n_jobs)
-raw.notch_filter(50, n_jobs=n_jobs)
-raw_copy = raw.resample(250, n_jobs=3, copy=True)
+# raw.filter(1, 98, n_jobs=n_jobs)
+# raw.notch_filter(50, n_jobs=n_jobs)
+# raw_copy = raw.resample(250, n_jobs=3, copy=True)
 
 
 # ICA Part
@@ -49,7 +49,7 @@ ica = ICA(n_components=0.95, method='fastica')
 picks = mne.pick_types(raw.info, meg=True, eeg=True,
                        stim=False, exclude='bads')
 
-ica.fit(raw, picks=picks, decim=2, reject=reject)
+ica.fit(raw, picks=picks, reject=reject)
 
 # maximum number of components to reject
 n_max_ecg, n_max_eog = 3, 1
