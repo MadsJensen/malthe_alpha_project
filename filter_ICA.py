@@ -24,15 +24,19 @@ else:
     n_jobs = 1
 
 
-raw = Raw(data_path + "0001_p_03_ds-raw_tsss_mc_TEST.fif", preload=True)
+raw = Raw(data_path + "subj_2_tsss-mc_autobad-raw.fif", preload=True)
+
 
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
               mag=4e-12  # T (magnetometers)
               # eeg=180e-6 #
               )
 
-# raw.resample(200, n_jobs=n_jobs)
-# raw.filter(None, 30, n_jobs=n_jobs)
+#raw_orig = raw.copy()
+
+# raw.resample(400, n_jobs=n_jobs)
+raw.filter(1, 98, n_jobs=n_jobs)
+raw.notch_filter(50, n_jobs=n_jobs)
 # raw.resample(250, n_jobs=3)
 
 
@@ -89,6 +93,25 @@ if eog_inds:
     eog_inds = eog_inds[:n_max_eog]
     ica.exclude += eog_inds
 
+
+#eog_epochs = create_eog_epochs(raw, ch_name="ECG005")
+#
+#eog_inds, scores = ica.find_bads_eog(raw)
+#ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+#
+#if eog_inds:
+#    show_picks = np.abs(scores).argsort()[::-1][:5]
+#
+#    # ica.plot_sources(raw, show_picks, exclude=eog_inds,
+##  title="Sources related to EOG artifacts (red)")
+#    ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
+#                        colorbar=True)
+#
+#    eog_inds = eog_inds[:n_max_eog]
+#    ica.exclude += eog_inds
+#
+
+
 ###########################################################################
 # 3) Assess component selection and unmixing quality
 
@@ -111,6 +134,6 @@ ica.plot_overlay(raw)  # EOG artifacts remain
 ##########################################################################
 # Apply the solution to Raw, Epochs or Evoked like this:
 raw_ica = ica.apply(raw, copy=False)
-raw_ica.save(data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss.fif",
+raw_ica.save("0001_p_03_ica-mc_raw_tsss.fif",
              overwrite=True)
  
