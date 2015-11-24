@@ -19,7 +19,7 @@ FAKE = False
 VERBOSE = True
 
 # ENH: install "official" version of stormdb on isis/hyades
-path_to_stormdb = '/users/cjb/src/git/cfin-tools/stormdb'
+path_to_stormdb = '/opt/local/cfin-tools/stormdb/'
 sys.path.append(path_to_stormdb)
 
 from stormdb.access import Query
