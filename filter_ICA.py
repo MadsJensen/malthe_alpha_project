@@ -7,7 +7,6 @@ Created on Wed Oct  8 14:45:02 2014.
 import mne
 import socket
 import numpy as np
-# import matplotlib.pylab as plt
 
 from mne.io import Raw
 from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
@@ -17,160 +16,156 @@ hostname = socket.gethostname()
 
 if hostname == "Wintermute":
     data_path = "/home/mje/mnt/caa/scratch/"
-    n_jobs = 1
 else:
     data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-    n_jobs = 3
 
-
-raw = Raw(data_path + "subj_2_tsss-mc_autobad-raw.fif", preload=True)
-raw2 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-1.fif", preload=True)
-raw3 = Raw(data_path + "subj_2_tsss-mc_autobad-raw-2.fif", preload=True)
-
-raw.append([raw2, raw3])
-
+# SETTINGS
+n_jobs = 1
 reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12  # T (magnetometers)
-              # eeg=180e-6 #
-              )
-
-raw_orig = raw.copy()
-
-raw.resample(250, n_jobs=n_jobs)
-raw.filter(1, 98, n_jobs=n_jobs)
-raw.notch_filter(50, n_jobs=n_jobs)
+              mag=4e-12,  # T (magnetometers)
+              eeg=180e-6)  # uVolts (EEG)
+l_freq, h_freq = 1, 98  # High and low frequency setting for the band pass
+n_freq = 50  # notch filter frequency
+decim = 7  # decim value
 
 
+subjects = []
 
-# ICA Part
-ica = ICA(n_components=0.95, method='fastica')
+for subject in subjects:
+    raw = Raw(data_path + "subj_%d_tsss-mc_autobad-raw.fif" % subject,
+              preload=True)
 
-picks = mne.pick_types(raw.info, meg=True, eeg=True,
-                       stim=False, exclude='bads')
+    # Filter raw
+    raw.filter(l_freq, h_freq, n_jobs=n_jobs)
+    raw.notch_filter(n_freq, n_jobs=n_jobs)
 
-ica.fit(raw, picks=picks, reject=reject)
+    raw_ecg = raw.crop(6, 25, copy=True)
 
-# maximum number of components to reject
-n_max_ecg, n_max_eog = 3, 2
+    # ICA Part
+    ica = ICA(n_components=0.95, method='fastica')
 
-################################################################n_max_ecg, n_max_eog = 3, 1
+    picks = mne.pick_types(raw.info, meg=True, eeg=True,
+                           stim=False, exclude='bads')
 
-##########################################################################
-# 2) identify bad components by analyzing latent sources.
+    ica.fit(raw, picks=picks, decim=decim, reject=reject)
 
-title = 'Sources related to %s artifacts (red)'
+    # maximum number of components to reject
+    n_max_ecg, n_max_eog = 3, 1
 
-# generate ECG epochs use detection via phase statistics
+    ##########################################################################
+    # 2) identify bad components by analyzing latent sources.
+    title = 'Sources related to %s artifacts (red)'
 
-ecg_epochs = create_ecg_epochs(raw, ch_name="ECG002",
-                               tmin=-.5, tmax=.5, picks=picks)
+    # generate ECG epochs use detection via phase statistics
+    ecg_epochs = create_ecg_epochs(raw_ecg, ch_name="ECG002",
+                                   tmin=-.5, tmax=.5, picks=picks)
 
-ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
-ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
+    ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+    ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
 
-if ecg_inds:
+    if ecg_inds:
+        show_picks = np.abs(scores).argsort()[::-1][:5]
+
+        ica.plot_sources(raw, show_picks, exclude=ecg_inds,
+                         title=title % 'ecg')
+        ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
+
+        ecg_inds = ecg_inds[:n_max_ecg]
+        ica.exclude += ecg_inds
+
+    # estimate average artifact
+    ecg_evoked = ecg_epochs.average()
+
+    # plot ECG sources + selection
+    ica.plot_sources(ecg_evoked, exclude=ecg_inds)
+
+    # plot ECG cleaning
+    ica.plot_overlay(ecg_evoked, exclude=ecg_inds)
+
+    # DETECT EOG BY CORRELATION
+    # HORIZONTAL EOG
+    eog_epochs = create_eog_epochs(raw, ch_name="EOG001")
+    eog_inds, scores = ica.find_bads_eog(raw)
+    # ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+
+    eog_inds, scores = ica.find_bads_eog(raw)
+    ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+
     show_picks = np.abs(scores).argsort()[::-1][:5]
 
-    ica.plot_sources(raw, show_picks, exclude=ecg_inds,
-                     title=title % 'ecg')
-    ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
-
-    ecg_inds = ecg_inds[:n_max_ecg]
-    ica.exclude += ecg_inds
-##########
-# 2) identify bad components by analyzing latent sources.
-
-title = 'Sources related to %s artifacts (red)'
-
-# generate ECG epochs use detection via phase statistics
-
-ecg_epochs = create_ecg_epochs(raw, ch_name="ECG002",
-                               tmin=-.5, tmax=.5, picks=picks)
-
-ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
-ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
-
-if ecg_inds:
-    show_picks = np.abs(scores).argsort()[::-1][:5]
-
-    ica.plot_sources(raw, show_picks, exclude=ecg_inds,
-                     title=title % 'ecg')
-    ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
-
-    ecg_inds = ecg_inds[:n_max_ecg]
-    ica.exclude += ecg_inds
-
-# detect EOG by correlation
-
-
-eog_epochs = create_eog_epochs(raw, ch_name="EOG001")
-
-eog_inds, scores = ica.find_bads_eog(raw)
-# ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
-
-
-eog_inds, scores = ica.find_bads_eog(raw)
-ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
-
-show_picks = np.abs(scores).argsort()[::-1][:5]
-
-ica.plot_sources(raw, show_picks, exclude=eog_inds, title=title % 'eog')
-ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
-
-eog_inds = eog_inds[:n_max_eog]
-ica.exclude += eog_inds
-
-if eog_inds:
-    show_picks = np.abs(scores).argsort()[::-1][:5]
-
-    ica.plot_sources(raw, show_picks, exclude=eog_inds,
-                     title="Sources related to EOG artifacts (red)")
-    ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
-                       colorbar=True)
+    ica.plot_sources(raw, show_picks, exclude=eog_inds, title=title % 'eog')
+    ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
 
     eog_inds = eog_inds[:n_max_eog]
     ica.exclude += eog_inds
 
+    if eog_inds:
+        show_picks = np.abs(scores).argsort()[::-1][:5]
 
-#eog_epochs = create_eog_epochs(raw, ch_name="ECG005")
-#
-#eog_inds, scores = ica.find_bads_eog(raw)
-#ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
-#
-#if eog_inds:
-#    show_picks = np.abs(scores).argsort()[::-1][:5]
-#
-#    # ica.plot_sources(raw, show_picks, exclude=eog_inds,
-##  title="Sources related to EOG artifacts (red)")
-#    ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
-#                        colorbar=True)
-#
-#    eog_inds = eog_inds[:n_max_eog]
-#    ica.exclude += eog_inds
-#
+        ica.plot_sources(raw, show_picks, exclude=eog_inds,
+                         title="Sources related to EOG artifacts (red)")
+        ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
+                            colorbar=True)
 
+        eog_inds = eog_inds[:n_max_eog]
+        ica.exclude += eog_inds
 
-###########################################################################
-# 3) Assess component selection and unmixing quality
+    eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5,
+                                   picks=picks).average()
+    # plot EOG sources + selection
+    ica.plot_sources(eog_evoked, exclude=eog_inds)
+    ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
 
-# estimate average artifact
-ecg_evoked = ecg_epochs.average()
-# plot ECG sources + selection
-ica.plot_sources(ecg_evoked, exclude=ecg_inds)
-# plot ECG cleaning
-ica.plot_overlay(ecg_evoked, exclude=ecg_inds)
+    # check the amplitudes do not change
+    ica.plot_overlay(raw)  # EOG artifacts remain
 
-eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5,
-                               picks=picks).average()
-# plot EOG sources + selection
-ica.plot_sources(eog_evoked, exclude=eog_inds)
-ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
+    del ecg_epochs
+    del ecg_evoked
 
-# check the amplitudes do not change
-ica.plot_overlay(raw)  # EOG artifacts remain
+    # VERTICAL EOG
+    eog_epochs = create_eog_epochs(raw, ch_name="EOG003")
 
-##########################################################################
-# Apply the solution to Raw, Epochs or Evoked like this:
-raw_ica = ica.apply(raw, copy=False)
-raw_ica.save("subj_2_filter_ica-mc_raw_tsss.fif",
-             overwrite=True)
+    eog_inds, scores = ica.find_bads_eog(raw)
+    # ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+
+    eog_inds, scores = ica.find_bads_eog(raw)
+    ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+
+    show_picks = np.abs(scores).argsort()[::-1][:5]
+
+    ica.plot_sources(raw, show_picks, exclude=eog_inds, title=title % 'eog')
+    ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
+
+    eog_inds = eog_inds[:n_max_eog]
+    ica.exclude += eog_inds
+
+    if eog_inds:
+        show_picks = np.abs(scores).argsort()[::-1][:5]
+
+        ica.plot_sources(raw, show_picks, exclude=eog_inds,
+                         title="Sources related to EOG artifacts (red)")
+        ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
+                            colorbar=True)
+
+        eog_inds = eog_inds[:n_max_eog]
+        ica.exclude += eog_inds
+
+    ###########################################################################
+    # 3) Assess component selection and unmixing quality
+
+    eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5,
+                                   picks=picks).average()
+    # plot EOG sources + selection
+    ica.plot_sources(eog_evoked, exclude=eog_inds)
+    ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
+
+    # check the amplitudes do not change
+    ica.plot_overlay(raw)  # EOG artifacts remain
+
+    ##########################################################################
+    # Apply the solution to Raw, Epochs or Evoked like this:
+    raw_ica = ica.apply(raw, copy=False)
+    ica.save("subj_%d-ica.fif" % subject)  # save ICA componenets
+    # Save raw with ICA removed
+    raw_ica.save("subj_%d_filter_ica-mc_raw_tsss.fif" % subject,
+                 overwrite=True)
