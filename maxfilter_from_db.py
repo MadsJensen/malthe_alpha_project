@@ -64,40 +64,40 @@ for sub in included_subjects:
     MEG_study = db.get_studies(sub, modality='MEG')
     if MEG_study is not None:
         # This is a 2D list with [series_name, series_number]
-        series = db.get_series(sub, MEG_study, 'MEG', verbose=False)
+        series = db.get_series(sub, MEG_study[0], 'MEG')
+        series = series["data"]  # only use the "data" series for now.
+
     # Change this to be more elegant: check whether any item in series
     # matches sequence_name
-        for serie in series:
-            if serie[0] != "empty_room":
-                in_name = db.get_files(sub, MEG_study, 'MEG', serie[1])
-                out_name = "%s_%s_mc-raw_tsss.fif" % (sub[:4], serie[0])
-                print(out_name)
+    in_name = db.get_files(sub, MEG_study[0], 'MEG', series)
+    out_name = "%s_%s_mc-raw_tsss.fif" % (sub[:4], "data")
+    print(out_name)
 
-                # if len(in_name) > 1:
-                for j, in_file in enumerate(in_name):
-                    if j == 0:
-                        out_fname = scratch_folder + out_name
-                    else:
-                        out_fname = scratch_folder\
-                                    + out_name[:-4] + "-%d.fif" % j
+    # if len(in_name) > 1:
+    for j, in_file in enumerate(in_name):
+        if j == 0:
+            out_fname = scratch_folder + out_name
+        else:
+            out_fname = scratch_folder\
+                        + out_name[:-4] + "-%d.fif" % j
 
-                    tsss_mc_log = out_fname[:-3] + "log"
-                    headpos_log = out_fname[:-4] + "_hp.log"
+        tsss_mc_log = out_fname[:-3] + "log"
+        headpos_log = out_fname[:-4] + "_hp.log"
 
-                    print(tsss_mc_log)
-                    print(headpos_log)
+        print(tsss_mc_log)
+        print(headpos_log)
 
-                    apply_maxfilter(in_fname=in_file,
-                                    out_fname=out_fname,
-                                    frame='head',
-                                    # origin= "0 0 40",
-                                    autobad="on",
-                                    st=True,
-                                    st_buflen=30,
-                                    st_corr=0.95,
-                                    mv_comp=True,
-                                    mv_hp=headpos_log,
-                                    # cal=cal,
-                                    # ctc=ctc,
-                                    overwrite=True,
-                                    mx_args=' -v > %s' % tsss_mc_log)
+        apply_maxfilter(in_fname=in_file,
+                        out_fname=out_fname,
+                        frame='head',
+                        # origin= "0 0 40",
+                        autobad="on",
+                        st=True,
+                        st_buflen=30,
+                        st_corr=0.95,
+                        mv_comp=True,
+                        mv_hp=headpos_log,
+                        # cal=cal,
+                        # ctc=ctc,
+                        overwrite=True,
+                        mx_args=' -v > %s' % tsss_mc_log)
