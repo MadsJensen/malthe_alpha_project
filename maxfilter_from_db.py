@@ -10,9 +10,10 @@ last edited: Wed Sep 9 2015
 from __future__ import print_function
 import os
 import sys
+import subprocess
 # import subprocess
 # import numpy as np
-from mne.preprocessing.maxfilter import apply_maxfilter
+# from mne.preprocessing.maxfilter import apply_maxfilter
 
 CLOBBER = False
 FAKE = False
@@ -29,13 +30,11 @@ from stormdb.process import Maxfilter
 # MAXFILTER PARAMS #
 mf_params = dict(origin='0 0 40',
                  frame='head',
-                 logfile=tsss_mc_log,
                  autobad="on",
                  st=True,
                  st_buflen=30,
                  st_corr=0.95,
                  movecomp=True,
-                 mv_hp=headpos_log,
                  # cal=cal,
                  # ctc=ctc,
                  mx_args='',
@@ -44,6 +43,8 @@ mf_params = dict(origin='0 0 40',
                  )
 
 
+# path to submit_to_isis
+cmd = "/usr/local/common/meeg-cfin/configurations/bin/submit_to_isis"  
 proj_code = "MINDLAB2015_MEG-CorticalAlphaAttention"
 
 db = Query(proj_code)
@@ -55,7 +56,7 @@ script_dir = proj_folder + '/scripts/'
 
 included_subjects = db.get_subjects()
 # just test with first one!
-included_subjects = included_subjects[3:]
+included_subjects = [included_subjects[3]]
 
 for sub in included_subjects:
     # this is an example of getting the DICOM files as a list
@@ -80,12 +81,12 @@ for sub in included_subjects:
                 out_fname = scratch_folder\
                             + out_name[:-4] + "-%d.fif" % j
     
-            print(out_fname)
+#            print(out_fname)
             tsss_mc_log = out_fname[:-3] + "log"
             headpos_log = out_fname[:-4] + "_hp.log"
     
-            print(tsss_mc_log)
-            print(headpos_log)
+#            print(tsss_mc_log)
+#            print(headpos_log)
     
             mf_params["logfile"] = tsss_mc_log
             mf_params["mv_hp"] = headpos_log
@@ -93,7 +94,8 @@ for sub in included_subjects:
             mf.build_maxfilter_cmd(in_file, out_fname, **mf_params)
             
             print(mf.cmd)
-                    
+            subprocess.call([cmd, "2", mf.cmd])
+            
 #        apply_maxfilter(in_fname=in_file,
 #                        out_fname=out_fname,
 #                        frame='head',
