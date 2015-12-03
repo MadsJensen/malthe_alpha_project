@@ -94,7 +94,7 @@ for sub in included_subjects:
             mf.build_maxfilter_cmd(in_file, out_fname, **mf_params)
 
             print(mf.cmd)
-            subprocess.call([cmd, "2", mf.cmd])
+            subprocess.call([cmd, "4", mf.cmd])
 
 #        apply_maxfilter(in_fname=in_file,
 #                        out_fname=out_fname,
