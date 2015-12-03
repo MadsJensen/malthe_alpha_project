@@ -25,38 +25,18 @@ sys.path.append(path_to_stormdb)
 from stormdb.access import Query
 
 
-# MAXFILTER PARAMS #
-
-#         #call to maxfilter
-#         apply_maxfilter(in_fname=in_name,
-#                         out_fname=out_name,
-#                         frame='head',
-# #                        origin= "0 0 40",
-#                         autobad="on",
-#                         st=True,
-#                         st_buflen=30,
-#                         st_corr=0.95,
-#                         mv_comp=True,
-#                         mv_hp=headpos_log,
-#                         cal='/projects/MINDLAB2011_24-MEG-readiness/misc/sss_cal_Mar11-May13.dat',
-#                         ctc='/projects/MINDLAB2011_24-MEG-readiness/misc/ct_sparse_Mar11-May13.fif',
-#                         overwrite=True,
-#                         mx_args=' -v | tee %s' % tsss_mc_log,
-#                         )
-
-
 proj_code = "MINDLAB2015_MEG-CorticalAlphaAttention"
 
 db = Query(proj_code)
 proj_folder = os.path.join('/projects', proj_code)
-scratch_folder = os.path.join(proj_folder, 'scratch/maxfiltered')
+scratch_folder = os.path.join(proj_folder, 'scratch/maxfiltered_data/')
 
 subjects_dir = os.path.join(scratch_folder, 'fs_subjects_dir')
 script_dir = proj_folder + '/scripts/'
 
 included_subjects = db.get_subjects()
 # just test with first one!
-included_subjects = included_subjects[3]
+included_subjects = [included_subjects[3]]
 
 for sub in included_subjects:
     # this is an example of getting the DICOM files as a list
