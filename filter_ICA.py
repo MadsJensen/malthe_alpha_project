@@ -24,9 +24,9 @@ maxfiltered_folder = data_path + "maxfiltered_data/"
 
 # SETTINGS
 n_jobs = 1
-reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12,  # T (magnetometers)
-              eeg=180e-6)  # uVolts (EEG)
+reject = dict(grad=5000e-13,  # T / m (gradiometers)
+              mag=5e-12,  # T (magnetometers)
+              eeg=300e-6)  # uVolts (EEG)
 l_freq, h_freq = 1, 98  # High and low frequency setting for the band pass
 n_freq = 50  # notch filter frequency
 decim = 7  # decim value
@@ -39,7 +39,7 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
 
     params:
     subject : str
-        thrt subject id to be loaded
+        the subject id to be loaded
     l_freq :  int
         the low frequency to filter
     h_freq : int
@@ -67,12 +67,12 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
 subjects = ["0004"]
 
 for subject in subjects:
-    raw = Raw(maxfiltered_folder + "%s_data_mc_raw_tsss.fif" % subject,
-              preload=True)
+    filter_data(subject)
 
-    # Filter raw
-    raw.notch_filter(n_freq, n_jobs=n_jobs)
-    raw.filter(l_freq, h_freq, n_jobs=n_jobs)
+
+for subject in subjects:
+    raw = Raw(save_folder + "%s_filtered_data_mc_raw_tsss.fif" % subject,
+              preload=False)
 
     # ICA Part
     ica = ICA(n_components=0.95, method='fastica')
@@ -90,8 +90,11 @@ for subject in subjects:
     title = 'Sources related to %s artifacts (red)'
 
     # generate ECG epochs use detection via phase statistics
-    ecg_epochs = create_ecg_epochs(raw_ecg, ch_name="ECG002",
-                                tmin=-.5, tmax=.5, picks=picks)
+    ecg_epochs = create_ecg_epochs(raw, ch_name="ECG002",
+                                   tmin=-.5, tmax=.5, picks=picks)
+    n_ecg_epochs_found = len(ecg_epochs.events)
+    sel_ecg_epochs = np.range(0, n_ecg_epochs_found, 10)
+    ecg_epochs = ecg_epochs[sel_ecg_epochs]
 
     ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
     ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
@@ -100,7 +103,7 @@ for subject in subjects:
         show_picks = np.abs(scores).argsort()[::-1][:5]
 
         ica.plot_sources(raw, show_picks, exclude=ecg_inds,
-                        title=title % 'ecg')
+                         title=title % 'ecg')
         ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
 
         ecg_inds = ecg_inds[:n_max_ecg]
