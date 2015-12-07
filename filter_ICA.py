@@ -7,6 +7,7 @@ Created on Wed Oct  8 14:45:02 2014.
 import mne
 import socket
 import numpy as np
+import os
 
 from mne.io import Raw
 from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
@@ -64,15 +65,18 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
                  overwrite=True)
 
 
-subjects = ["0004"]
+os.chdir(maxfiltered_folder)
+subjects = !ls *_data_mc_raw_tsss.fif
+subjects = [sub[:4] for sub in subjects]
+
 
 for subject in subjects:
     filter_data(subject)
 
 
 for subject in subjects:
-    raw = Raw(save_folder + "%s_filtered_data_mc_raw_tsss.fif" % subject,
-              preload=False)
+    raw = Raw(save_folder + "%s_filterd_data_mc_raw_tsss.fif" % subject,
+              preload=True)
 
     # ICA Part
     ica = ICA(n_components=0.95, method='fastica')
