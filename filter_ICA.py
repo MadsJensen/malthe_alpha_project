@@ -38,17 +38,17 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
     """Filter the data.
 
     params:
-    subject : string
+    subject : str
         thrt subject id to be loaded
-    l_freq :  integer
+    l_freq :  int
         the low frequency to filter
-    h_freq : interger
+    h_freq : int
         the high frequency to filter
-    n_freq : integer
+    n_freq : int
         the notch filter frequency
     save : bool
         save the filtered data
-    n_jobs : interger
+    n_jobs : int
         The number of CPU to use
     """
     raw = Raw(maxfiltered_folder + "%s_data_mc_raw_tsss.fif" % subject,
