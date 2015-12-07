@@ -56,7 +56,7 @@ script_dir = proj_folder + '/scripts/'
 
 included_subjects = db.get_subjects()
 # just test with first one!
-included_subjects = included_subjects[3:]
+included_subjects = included_subjects[-4:]
 
 for sub in included_subjects:
     # this is an example of getting the DICOM files as a list
