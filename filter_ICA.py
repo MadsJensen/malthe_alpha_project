@@ -60,7 +60,7 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
     raw.filter(l_freq, h_freq, n_jobs=n_jobs)
 
     if save is True:
-        raw.save(save_folder + "%s_data_mc_raw_tsss.fif" % subject)
+        raw.save(save_folder + "%s_filterd_data_mc_raw_tsss.fif" % subject)
 
 
 subjects = ["0004"]
