@@ -11,14 +11,35 @@ import numpy as np
 from mne.io import Raw
 from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 
+# Setup paths and prepare raw data
+hostname = socket.gethostname()
+
+if hostname == "Wintermute":
+    data_path = "/home/mje/mnt/caa/scratch/"
+else:
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+
+save_folder = data_path + "filter_ica_data/"
+maxfiltered_folder = data_path + "maxfiltered_data/"
+
+# SETTINGS
+n_jobs = 1
+reject = dict(grad=4000e-13,  # T / m (gradiometers)
+              mag=4e-12,  # T (magnetometers)
+              eeg=180e-6)  # uVolts (EEG)
+l_freq, h_freq = 1, 98  # High and low frequency setting for the band pass
+n_freq = 50  # notch filter frequency
+decim = 7  # decim value
+
 
 # Functions #
-def filter_data(subject, l_freq, h_freq, n_freq, save=True, n_jobs=1):
+def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
+                save=True, n_jobs=1):
     """Filter the data.
 
     params:
     subject : string
-        the subject id to be loaded
+        thrt subject id to be loaded
     l_freq :  integer
         the low frequency to filter
     h_freq : interger
@@ -40,27 +61,6 @@ def filter_data(subject, l_freq, h_freq, n_freq, save=True, n_jobs=1):
 
     if save is True:
         raw.save(save_folder + "%s_data_mc_raw_tsss.fif" % subject)
-
-
-# Setup paths and prepare raw data
-hostname = socket.gethostname()
-
-if hostname == "Wintermute":
-    data_path = "/home/mje/mnt/caa/scratch/"
-else:
-    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
-
-save_folder = data_path + "filter_ica_data/"
-maxfiltered_folder = data_path + "maxfiltered_data/"
-
-# SETTINGS
-n_jobs = 1
-reject = dict(grad=4000e-13,  # T / m (gradiometers)
-              mag=4e-12,  # T (magnetometers)
-              eeg=180e-6)  # uVolts (EEG)
-l_freq, h_freq = 1, 98  # High and low frequency setting for the band pass
-n_freq = 50  # notch filter frequency
-decim = 7  # decim value
 
 
 subjects = ["0004"]
