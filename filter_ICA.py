@@ -54,7 +54,7 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
     save : bool
         save the filtered data
     n_jobs : int
-        The number of CPU to use
+        The number of CPUs to use in parallel.
     """
     raw = Raw(maxfiltered_folder + "%s_data_mc_raw_tsss.fif" % subject,
               preload=True)
