@@ -75,6 +75,15 @@ for subject in subjects:
 
 
 for subject in subjects:
+
+
+def compute_ica(subject):
+    """ Function will compute ICA on raw and apply the ICA.
+
+    params:
+    subject : str
+        the subject id to be loaded
+    """
     raw = Raw(save_folder + "%s_filterd_data_mc_raw_tsss.fif" % subject,
               preload=True)
 
