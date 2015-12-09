@@ -93,7 +93,7 @@ def compute_ica(subject):
 
     ##########################################################################
     # 2) identify bad components by analyzing latent sources.
-    title = 'Sources related to %s artifacts (red)'
+    title = 'Sources related to %s artifacts (red) for sub: %s'
 
     # generate ECG epochs use detection via phase statistics
     ecg_epochs = create_ecg_epochs(raw, ch_name="ECG002",
@@ -103,16 +103,18 @@ def compute_ica(subject):
     ecg_epochs = ecg_epochs[sel_ecg_epochs]
 
     ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
-    fig = ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
+    fig = ica.plot_scores(scores, exclude=ecg_inds,
+                          title=title % ('ecg', subject))
     fig.savefig(save_folder + "pics/%s_ecg_scores.png" % subject)
 
     if ecg_inds:
         show_picks = np.abs(scores).argsort()[::-1][:5]
 
         fig = ica.plot_sources(raw, show_picks, exclude=ecg_inds,
-                               title=title % 'ecg', show=False)
+                               title=title % ('ecg', subject), show=False)
         fig.savefig(save_folder + "pics/%s_ecg_sources.png" % subject)
-        fig = ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
+        fig = ica.plot_components(ecg_inds, title=title % ('ecg', subject),
+                                  colorbar=True)
         fig.savefig(save_folder + "pics/%s_ecg_component.png" % subject)
 
         ecg_inds = ecg_inds[:n_max_ecg]
@@ -137,15 +139,14 @@ def compute_ica(subject):
     fig = ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
     fig.savefig(save_folder + "pics/%s_eog_scores.png" % subject)
 
-
-    fig = ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
+    fig = ica.plot_components(eog_inds, title=title % ('eog', subject),
+                              colorbar=True)
     fig.savefig(save_folder + "pics/%s_eog_component.png" % subject)
-    
 
     eog_inds = eog_inds[:n_max_eog]
     ica.exclude += eog_inds
 
-    del eog_epochs 
+    del eog_epochs
 #    if eog_inds:
 #        show_picks = np.abs(scores).argsort()[::-1][:5]
 #
