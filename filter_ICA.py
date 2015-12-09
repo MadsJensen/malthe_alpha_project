@@ -136,7 +136,8 @@ def compute_ica(subject):
     # HORIZONTAL EOG
     eog_epochs = create_eog_epochs(raw, ch_name="EOG001")
     eog_inds, scores = ica.find_bads_eog(raw)
-    fig = ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+    fig = ica.plot_scores(scores, exclude=eog_inds,
+                          title=title % ('eog', subject))
     fig.savefig(save_folder + "pics/%s_eog_scores.png" % subject)
 
     fig = ica.plot_components(eog_inds, title=title % ('eog', subject),
