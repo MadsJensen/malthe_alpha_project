@@ -76,7 +76,7 @@ def compute_ica(subject):
     subject : str
         the subject id to be loaded
     """
-    raw = Raw(save_folder + "%s_filterd_data_mc_raw_tsss.fif" % subject,
+    raw = Raw(save_folder + "%s_filtered_data_mc_raw_tsss.fif" % subject,
               preload=True)
 
     # ICA Part
