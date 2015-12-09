@@ -13,8 +13,9 @@ import glob
 from mne.io import Raw
 from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-plt.use('Agg')
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
@@ -102,42 +103,44 @@ def compute_ica(subject):
     ecg_epochs = ecg_epochs[sel_ecg_epochs]
 
     ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
-#    ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
+    fig = ica.plot_scores(scores, exclude=ecg_inds, title=title % 'ecg')
+    fig.savefig(save_folder + "pics/%s_ecg_scores.png" % subject)
 
     if ecg_inds:
-#        show_picks = np.abs(scores).argsort()[::-1][:5]
+        show_picks = np.abs(scores).argsort()[::-1][:5]
 
         fig = ica.plot_sources(raw, show_picks, exclude=ecg_inds,
                                title=title % 'ecg', show=False)
-        fig.savefig(save_folder + "pics/test.png")
-#        ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
+        fig.savefig(save_folder + "pics/%s_ecg_sources.png" % subject)
+        fig = ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
+        fig.savefig(save_folder + "pics/%s_ecg_component.png" % subject)
 
         ecg_inds = ecg_inds[:n_max_ecg]
         ica.exclude += ecg_inds
 
     # estimate average artifact
-#    ecg_evoked = ecg_epochs.average()
+    ecg_evoked = ecg_epochs.average()
     del ecg_epochs
 
     # plot ECG sources + selection
-#    ica.plot_sources(ecg_evoked, exclude=ecg_inds)
+    fig = ica.plot_sources(ecg_evoked, exclude=ecg_inds)
+    fig.savefig(save_folder + "pics/%s_ecg_sources_ave.png" % subject)
 
     # plot ECG cleaning
-#    ica.plot_overlay(ecg_evoked, exclude=ecg_inds)
+    ica.plot_overlay(ecg_evoked, exclude=ecg_inds)
+    fig.savefig(save_folder + "pics/%s_ecg_sources_clean_ave.png" % subject)
 
     # DETECT EOG BY CORRELATION
     # HORIZONTAL EOG
     eog_epochs = create_eog_epochs(raw, ch_name="EOG001")
     eog_inds, scores = ica.find_bads_eog(raw)
-    # ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+    fig = ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
+    fig.savefig(save_folder + "pics/%s_eog_scores.png" % subject)
 
-    eog_inds, scores = ica.find_bads_eog(raw)
-#    ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
 
-#    show_picks = np.abs(scores).argsort()[::-1][:5]
-
-#    ica.plot_sources(raw, show_picks, exclude=eog_inds, title=title % 'eog')
-#    ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
+    fig = ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
+    fig.savefig(save_folder + "pics/%s_eog_component.png" % subject)
+    
 
     eog_inds = eog_inds[:n_max_eog]
     ica.exclude += eog_inds
@@ -208,6 +211,7 @@ def compute_ica(subject):
     # Save raw with ICA removed
     raw_ica.save(save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % subject,
                  overwrite=True)
+    plt.close("all")
 
 
 # Run code
