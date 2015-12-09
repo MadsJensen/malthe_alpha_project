@@ -13,6 +13,9 @@ import glob
 from mne.io import Raw
 from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 
+import matplotlib.pyplot as plt
+plt.use('Agg')
+
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
 
@@ -66,21 +69,8 @@ def filter_data(subject, l_freq=l_freq, h_freq=h_freq, n_freq=n_freq,
                  overwrite=True)
 
 
-os.chdir(maxfiltered_folder)
-subjects = glob.glob("*_data_mc_raw_tsss.fif")
-subjects = [sub[:4] for sub in subjects]
-subjects.sort()
-
-
-for subject in subjects:
-    filter_data(subject)
-
-
-for subject in subjects:
-
-
 def compute_ica(subject):
-    """ Function will compute ICA on raw and apply the ICA.
+    """Function will compute ICA on raw and apply the ICA.
 
     params:
     subject : str
@@ -90,7 +80,7 @@ def compute_ica(subject):
               preload=True)
 
     # ICA Part
-    ica = ICA(n_components=0.95, method='fastica')
+    ica = ICA(n_components=0.95, method='fastica', max_iter=256)
 
     picks = mne.pick_types(raw.info, meg=True, eeg=True,
                            stim=False, exclude='bads')
@@ -117,8 +107,9 @@ def compute_ica(subject):
     if ecg_inds:
 #        show_picks = np.abs(scores).argsort()[::-1][:5]
 
-#        ica.plot_sources(raw, show_picks, exclude=ecg_inds,
-#                         title=title % 'ecg')
+        fig = ica.plot_sources(raw, show_picks, exclude=ecg_inds,
+                               title=title % 'ecg', show=False)
+        fig.savefig(save_folder + "pics/test.png")
 #        ica.plot_components(ecg_inds, title=title % 'ecg', colorbar=True)
 
         ecg_inds = ecg_inds[:n_max_ecg]
@@ -170,47 +161,46 @@ def compute_ica(subject):
 #    # check the amplitudes do not change
 #    ica.plot_overlay(raw)  # EOG artifacts remain
 
-
     # VERTICAL EOG
 #    eog_epochs = create_eog_epochs(raw, ch_name="EOG003")
-#    
+#
 #    eog_inds, scores = ica.find_bads_eog(raw)
 #    # ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
-#    
+#
 #    eog_inds, scores = ica.find_bads_eog(raw)
 #    ica.plot_scores(scores, exclude=eog_inds, title=title % 'eog')
-#    
+#
 #    show_picks = np.abs(scores).argsort()[::-1][:5]
-    
+
 #    ica.plot_sources(raw, show_picks, exclude=eog_inds, title=title % 'eog')
 #    ica.plot_components(eog_inds, title=title % 'eog', colorbar=True)
-    
+
 #    eog_inds = eog_inds[:n_max_eog]
 #    ica.exclude += eog_inds
-#    
+#
 #    if eog_inds:
 #        show_picks = np.abs(scores).argsort()[::-1][:5]
-#    
+#
 #        ica.plot_sources(raw, show_picks, exclude=eog_inds,
 #                            title="Sources related to EOG artifacts (red)")
 #        ica.plot_components(eog_inds, title="Sources related to EOG artifacts",
 #                            colorbar=True)
-#    
+#
 #        eog_inds = eog_inds[:n_max_eog]
 #        ica.exclude += eog_inds
-    
+
     ###########################################################################
     # 3) Assess component selection and unmixing quality
-    
+
 #    eog_evoked = create_eog_epochs(raw, tmin=-.5, tmax=.5,
 #                                    picks=picks).average()
 #    # plot EOG sources + selection
 #    ica.plot_sources(eog_evoked, exclude=eog_inds)
 #    ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
-#    
+#
 #    # check the amplitudes do not change
 #    ica.plot_overlay(raw)  # EOG artifacts remain
-    
+
     ##########################################################################
     # Apply the solution to Raw, Epochs or Evoked like this:
     raw_ica = ica.apply(raw, copy=False)
@@ -218,3 +208,18 @@ def compute_ica(subject):
     # Save raw with ICA removed
     raw_ica.save(save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % subject,
                  overwrite=True)
+
+
+# Run code
+os.chdir(maxfiltered_folder)
+subjects = glob.glob("*_data_mc_raw_tsss.fif")
+subjects = [sub[:4] for sub in subjects]
+subjects.sort()
+
+
+for subject in subjects:
+    filter_data(subject)
+
+
+for subject in subjects:
+    compute_ica(subject)
