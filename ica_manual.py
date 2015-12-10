@@ -35,7 +35,7 @@ n_freq = 50  # notch filter frequency
 decim = 7  # decim value
 
 
-subject = "0005"
+subject = "0022"
 
 
 os.chdir(save_folder)
@@ -58,7 +58,7 @@ picks = mne.pick_types(raw.info, meg=True, eeg=True,
 ica.fit(raw, picks=picks, decim=decim, reject=reject)
 
 # maximum number of components to reject
-n_max_ecg, n_max_eog = 3, 1
+n_max_ecg, n_max_eog = 3, 1 
 
 ##########################################################################
 # 2) identify bad components by analyzing latent sources.
@@ -123,9 +123,9 @@ eog_epochs = create_eog_epochs(raw, ch_name="EOG003")
 eog_inds, scores = ica.find_bads_eog(raw)
 fig = ica.plot_scores(scores, exclude=eog_inds,
                       title=title % ('eog', subject))
-fig.savefig(save_folder + "pics/%s_eog_scores.png" % subject)
+fig.savefig(save_folder + "pics/%s_heog_scores.png" % subject)
 
-fig = ica.plot_components(eog_inds, title=title % ('eog', subject),
+fig = ica.plot_components(eog_inds, title=title % ('heog', subject),
                           colorbar=True)
 fig.savefig(save_folder + "pics/%s_eog_component.png" % subject)
 
