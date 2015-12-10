@@ -139,3 +139,12 @@ def compute_epochs_cov_evokeds(subject):
 
     # save evoked data to disk
     mne.write_evokeds('%s_filtered_ica_mc_raw_tsss-ave.fif', evokeds)
+
+
+os.chdir(save_folder)
+subjects = glob.glob("*_filtered_ica_mc_raw_tsss.fif")
+subjects = [sub[:4] for sub in subjects]
+subjects.sort()
+
+for subject in subjects:
+    compute_epochs_cov_evokeds(subject)
