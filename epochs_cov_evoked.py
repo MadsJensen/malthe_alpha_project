@@ -7,13 +7,14 @@ average and save evoked response to disk
 """
 import mne
 import socket
+import os
+import glob
 
 from mne import compute_covariance
 from mne.io import Raw
 
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
@@ -87,6 +88,7 @@ include = []  # or stim channels ['STI 014']
 
 # pick EEG and MEG channels
 
+
 def compute_epochs_cov_evokeds(subject):
     """Epoch, compute noise covariance and average.
 
@@ -94,7 +96,7 @@ def compute_epochs_cov_evokeds(subject):
     subject : str
         the subject id to be loaded
     """
-    raw = Raw(save_folder + "%s_filtered_data_mc_raw_tsss.fif" % subject,
+    raw = Raw(save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % subject,
               preload=True)
     # Select events to extract epochs from.
     event_id = {'ent_left': 1,
@@ -128,7 +130,7 @@ def compute_epochs_cov_evokeds(subject):
     mne.write_cov("%s-cov.fif" % subject, cov)
 
     # Average epochs and get evoked data corresponding to the left stimulation
-    ###############################################################################
+    ###########################################################################
     # Save evoked responses for different conditions to disk
 
     # average epochs and get Evoked datasets
