@@ -105,7 +105,7 @@ def compute_epochs_cov_evokeds(subject):
                 'ctl_right': 8}
 
     #   Setup for reading the raw data
-    events = mne.find_events(raw)
+    events = mne.find_events(raw, min_duration=0.01)
 
     picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=False,
                            include=include, exclude='bads')
@@ -127,7 +127,7 @@ def compute_epochs_cov_evokeds(subject):
 
     # Make noise cov
     cov = compute_covariance(epochs, tmin=None, tmax=0, method="auto")
-    mne.write_cov("%s-cov.fif" % subject, cov)
+    mne.write_cov(epochs_folder + "%s-cov.fif" % subject, cov)
 
     # Average epochs and get evoked data corresponding to the left stimulation
     ###########################################################################
@@ -140,7 +140,8 @@ def compute_epochs_cov_evokeds(subject):
     evokeds = [epochs[cond].average() for cond in epochs.event_id.keys()]
 
     # save evoked data to disk
-    mne.write_evokeds('%s_filtered_ica_mc_raw_tsss-ave.fif', evokeds)
+    mne.write_evokeds(epochs_folder +\
+        '%s_filtered_ica_mc_raw_tsss-ave.fif' % subject, evokeds)
 
 
 os.chdir(save_folder)
