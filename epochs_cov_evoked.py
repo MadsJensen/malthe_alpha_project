@@ -149,5 +149,17 @@ subjects = glob.glob("*_filtered_ica_mc_raw_tsss.fif")
 subjects = [sub[:4] for sub in subjects]
 subjects.sort()
 
+subjects = ["0004",
+            "0006",
+            "0008",
+            "0009",
+            "0010",
+            "0012",
+            "0013",
+            "0014",
+            "0015", 
+            "0016",
+            "0017"]
+
 for subject in subjects:
     compute_epochs_cov_evokeds(subject)
