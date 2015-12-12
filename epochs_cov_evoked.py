@@ -141,9 +141,9 @@ def compute_epochs_cov_evokeds(subject):
     evokeds = [epochs[cond].average() for cond in epochs.event_id.keys()]
 
     # save evoked data to disk
-    mne.write_evokeds(epochs_folder +\
-        '%s_filtered_ica_mc_raw_tsss-ave.fif' % subject, evokeds)
-        
+    mne.write_evokeds(epochs_folder +
+                      '%s_filtered_ica_mc_raw_tsss-ave.fif' % subject, evokeds)
+
     plt.close("all")
 
 
@@ -160,7 +160,7 @@ subjects = ["0004",
             "0012",
             "0013",
             "0014",
-            "0015", 
+            "0015",
             "0016",
             "0017"]
 
