@@ -15,6 +15,7 @@ from mne.io import Raw
 
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
@@ -142,6 +143,8 @@ def compute_epochs_cov_evokeds(subject):
     # save evoked data to disk
     mne.write_evokeds(epochs_folder +\
         '%s_filtered_ica_mc_raw_tsss-ave.fif' % subject, evokeds)
+        
+    plt.close("all")
 
 
 os.chdir(save_folder)
