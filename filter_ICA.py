@@ -164,10 +164,11 @@ os.chdir(maxfiltered_folder)
 subjects = glob.glob("*_data_mc_raw_tsss.fif")
 subjects = [sub[:4] for sub in subjects]
 subjects.sort()
+subjects = subjects[-3:]
 
 
-# for subject in subjects:        
-#     filter_data(subject)
+for subject in subjects:        
+    filter_data(subject)
 
 
 for subject in subjects:

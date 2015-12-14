@@ -20,7 +20,8 @@ FAKE = False
 VERBOSE = True
 
 # ENH: install "official" version of stormdb on isis/hyades
-path_to_stormdb = '/usr/local/common/meeg-cfin/stormdb'
+#path_to_stormdb = '/usr/local/common/meeg-cfin/stormdb'
+path_to_stormdb = "/volatile/mje/meeg-cfin/stormdb"
 sys.path.append(path_to_stormdb)
 
 from stormdb.access import Query
@@ -56,7 +57,7 @@ script_dir = proj_folder + '/scripts/'
 
 included_subjects = db.get_subjects()
 # just test with first one!
-included_subjects = included_subjects[-4:]
+included_subjects = included_subjects[-3:]
 
 for sub in included_subjects:
     # this is an example of getting the DICOM files as a list
