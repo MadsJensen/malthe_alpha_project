@@ -91,12 +91,11 @@ included_subjects =[u'0006_O7K',
 
 for sub in included_subjects:
     run_simnibs = "mri2mesh --all %s %s_t1.nii.gz %s_t2.nii.gz"  \
-        %(sub[:4], sub[:4], sub[:4])
-        
-    if os.path.isfile(fs_subjects_dir + 
+                  % (sub[:4], sub[:4], sub[:4])
+
+    if os.path.isfile(fs_subjects_dir +
                       "%s/%s_t1.nii.gz" % (sub[:4], sub[:4])) &\
-      os.path.isfile(fs_subjects_dir + 
-                      "%s/%s_t2.nii.gz" % (sub[:4], sub[:4])):      
-          os.chdir(fs_subjects_dir + sub[:4])    
-          subprocess.call([cmd, "1", run_simnibs])
- 
+        os.path.isfile(fs_subjects_dir +
+                       "%s/%s_t2.nii.gz" % (sub[:4], sub[:4])):
+        os.chdir(fs_subjects_dir + sub[:4])
+        subprocess.call([cmd, "1", run_simnibs])
