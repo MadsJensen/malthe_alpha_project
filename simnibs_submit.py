@@ -68,13 +68,35 @@ for sub in included_subjects:
         os.chdir(fs_subjects_dir + subj_fname)
         subprocess.call([cmd, "1", convert_t1])
         subprocess.call([cmd, "1", convert_t2])
-       
-
+    
+    
+included_subjects =[u'0006_O7K',
+                     u'0007_AGN',
+                     u'0008_PDM',
+                     u'0009_8PP',
+                     u'0010_VR0',
+                     u'0011_UEG',
+                     u'0012_89T',
+                     u'0013_OAT',
+                     u'0014_5RC',
+                     u'0015_Z8F',
+                     u'0016_PLJ',
+                     u'0017_TTT',
+                     u'0020_OWS',
+                     u'0021_NXJ',
+                     u'0022_QID',
+                     u'0023_VUS',
+                     u'0024_JSO',
+                     u'0025_L7P']
 
 for sub in included_subjects:
     run_simnibs = "mri2mesh --all %s %s_t1.nii.gz %s_t2.nii.gz"  \
         %(sub[:4], sub[:4], sub[:4])
         
-    os.chdir(fs_subjects_dir + sub[:4])    
-    subprocess.call([cmd, "1", run_simnibs])
+    if os.path.isfile(fs_subjects_dir + 
+                      "%s/%s_t1.nii.gz" % (sub[:4], sub[:4])) &\
+      os.path.isfile(fs_subjects_dir + 
+                      "%s/%s_t2.nii.gz" % (sub[:4], sub[:4])):      
+          os.chdir(fs_subjects_dir + sub[:4])    
+          subprocess.call([cmd, "1", run_simnibs])
  
