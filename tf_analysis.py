@@ -59,10 +59,9 @@ def compute_tf(epochs):
 
 
 for sub in subjects:
-    epochs = mne.read_epochs("%s_filtered_ica_mc_raw_tsss.fif" % sub)
+    epochs = mne.read_epochs("%s_filtered_ica_mc_tsss-epo.fif" % sub)
     exec("power_%s, itc_%s = compute_tf(epochs[\'ent_left\'])"
-         % (sub, sub, sub))
-
+         % (sub, sub))
 
 
 # Baseline correction can be applied to power or done in plots
