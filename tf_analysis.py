@@ -37,7 +37,7 @@ n_cycles = 4  # freqs / 2.  # different number of cycle per frequency
 # Calculate power and intertrial coherence
 
 os.chdir(epochs_folder)
-subjects = glob.glob("*_filtered_ica_mc_raw_tsss.fif")
+subjects = glob.glob("*_filtered_ica_mc_tsss-epo.fif")
 subjects = [sub[:4] for sub in subjects]
 subjects.sort()
 
@@ -58,11 +58,15 @@ def compute_tf(epochs):
     return power, itc
 
 
+power_all = []
+itc_all = []
 for sub in subjects:
-    epochs = mne.read_epochs("%s_filtered_ica_mc_raw_tsss.fif" % sub)
+    epochs = mne.read_epochs("%s_filtered_ica_mc_tsss-epo.fif" % sub)
     exec("power_%s, itc_%s = compute_tf(epochs[\'ent_left\'])"
-         % (sub, sub, sub))
-
+         % (sub, sub))
+    power_all.append("power_%s" % sub)
+    itc_all.append("itc_%s" % sub)
+         
 
 
 # Baseline correction can be applied to power or done in plots
