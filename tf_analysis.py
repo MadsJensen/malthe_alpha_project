@@ -58,14 +58,22 @@ def compute_tf(epochs):
     return power, itc
 
 
-power_all = []
-itc_all = []
+power_ent_left = []
+itc_ent_left = []
+power_ent_right = []
+itc_ent_right = []
+power_ctl_left = []
+itc_ctl_left = []
+power_ctl_right = []
+itc_ctl_right = []
+
 for sub in subjects:
     epochs = mne.read_epochs("%s_filtered_ica_mc_tsss-epo.fif" % sub)
-    exec("power_%s, itc_%s = compute_tf(epochs[\'ent_left\'])"
-         % (sub, sub))
-    exec("power_all.append(power_%s)" % sub)
-    exec("itc_all.append(itc_%s)" % sub)
+    for cond in epochs.event_id.keys():
+        exec("power_%s, itc_%s = compute_tf(epochs[\"%s\"])"
+             % (sub, sub, cond))
+        exec("power_%s.append(power_%s)" % (cond, sub))
+        exec("itc_%s.append(itc_%s)" % (cond, sub))
          
 
 [tf.apply_baseline((None, 0), mode="zscore") for tf in power_all]
