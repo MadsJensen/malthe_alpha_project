@@ -64,9 +64,21 @@ for sub in subjects:
     epochs = mne.read_epochs("%s_filtered_ica_mc_tsss-epo.fif" % sub)
     exec("power_%s, itc_%s = compute_tf(epochs[\'ent_left\'])"
          % (sub, sub))
-    power_all.append("power_%s" % sub)
-    itc_all.append("itc_%s" % sub)
+    exec("power_all.append(power_%s)" % sub)
+    exec("itc_all.append(itc_%s)" % sub)
          
+
+[tf.apply_baseline((None, 0), mode="zscore") for tf in power_all]
+
+
+
+occ_r = mne.read_selection("Right-occipital")
+occ_r_cl = [o[:3] + o[4:] for o in occ_r]
+
+power_all_sel = [pow.pick_channels(occ_r_cl, copy=True) for 
+                 pow in power_all]
+
+mean_power = np.mean([pow.data[:, 2:-3, :] for pow in power_all_sel], axis=1)
 
 
 # Baseline correction can be applied to power or done in plots
@@ -92,3 +104,16 @@ itc.plot_topo(title='Inter-Trial coherence', vmin=0., vmax=1., cmap='Reds')
 
 # for subject in subjects:
 #     compute_tf(subject)
+
+occ_r = mne.read_selection("Right-occipital")
+occ_r_cl = [o[:3] + o[4:] for o in occ_r]
+
+foo = []
+for pow in power_all:
+    foo.append(pow.pick_channels(occ_cl))
+
+pow_sel_ga = []
+
+
+
+
