@@ -5,16 +5,16 @@ something here
 
 """
 # Authors: mje mads [] cnru.dk
-
-import numpy as np
-import matplotlib.pyplot as plt
-import socket
-import os
-import glob
 import cPickle as pickle
+import glob
+import os
+import socket
 
+import matplotlib.pyplot as plt
 import mne
+import numpy as np
 from mne.time_frequency import tfr_morlet
+
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
@@ -75,7 +75,7 @@ for sub in subjects:
              % (sub, sub, cond))
         exec("power_%s.append(power_%s)" % (cond, sub))
         exec("itc_%s.append(itc_%s)" % (cond, sub))
-         
+
 
 os.chdir(tf_folder)
 # save power list
@@ -90,7 +90,7 @@ pickle.dump(itc_ent_right, open("itc_ent_right.p", "wb"))
 pickle.dump(itc_ctl_right, open("itc_ctl_right.p", "wb"))
 pickle.dump(itc_ctl_left, open("itc_ctl_left.p", "wb"))
 
-# apply baseline 
+# apply baseline
 sides = ["left", "right"]
 conditions = ["ent", "ctl"]
 
@@ -117,19 +117,25 @@ power_ctl_right_sel = [pow.pick_channels(occ_r, copy=True) for
 
 
 mp_ent_left_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ent_left_sel], axis=1), axis=1)
+                                   pow in power_ent_left_sel], axis=1), axis=1)
 mp_ctl_left_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ctl_left_sel], axis=1), axis=1)
+                                   pow in power_ctl_left_sel], axis=1), axis=1)
 mp_ent_right_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ent_right_sel], axis=1), axis=1)
+                                    pow in power_ent_right_sel], axis=1),
+                           axis=1)
 mp_ctl_right_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ctl_right_sel], axis=1), axis=1)
+                                    pow in power_ctl_right_sel], axis=1),
+                           axis=1)
 
 plt.figure()
-plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm', label="ent_right", linewidth=3)
-plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k', label="ctl_right", linewidth=3)
-plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b', label="ctl_left", linewidth=3)
-plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r', label="ent_left", linewidth=3)
+plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm',
+         label="ent_right", linewidth=3)
+plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k',
+         label="ctl_right", linewidth=3)
+plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b',
+         label="ctl_left", linewidth=3)
+plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r',
+         label="ent_left", linewidth=3)
 plt.legend()
 plt.title("Power: Right occ sensors")
 plt.xlabel("time (in ms)")
@@ -148,19 +154,25 @@ power_ctl_right_sel = [pow.pick_channels(occ_l, copy=True) for
 
 
 mp_ent_left_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ent_left_sel], axis=1), axis=1)
+                                   pow in power_ent_left_sel], axis=1), axis=1)
 mp_ctl_left_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ctl_left_sel], axis=1), axis=1)
+                                   pow in power_ctl_left_sel], axis=1), axis=1)
 mp_ent_right_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ent_right_sel], axis=1), axis=1)
+                                    pow in power_ent_right_sel], axis=1),
+                           axis=1)
 mp_ctl_right_sel = np.mean(np.mean([pow.data[:, 2:-3, :] for
-                           pow in power_ctl_right_sel], axis=1), axis=1)
+                                    pow in power_ctl_right_sel], axis=1),
+                           axis=1)
 
 plt.figure()
-plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm', label="ent_right", linewidth=3)
-plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k', label="ctl_right", linewidth=3)
-plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b', label="ctl_left", linewidth=3)
-plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r', label="ent_left", linewidth=3)
+plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm',
+         label="ent_right", linewidth=3)
+plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k',
+         label="ctl_right", linewidth=3)
+plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b',
+         label="ctl_left", linewidth=3)
+plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r',
+         label="ent_left", linewidth=3)
 plt.legend()
 plt.title("Power: Left occ sensors")
 plt.xlabel("time (in ms)")
@@ -170,29 +182,33 @@ plt.savefig(tf_folder + "pics/power_left_occ_sens.png")
 
 # ITC plots
 itc_ent_left_sel = [itc.pick_channels(occ_r, copy=True) for
-                      itc in itc_ent_left]
+                    itc in itc_ent_left]
 itc_ctl_left_sel = [itc.pick_channels(occ_r, copy=True) for
-                      itc in itc_ctl_left]
+                    itc in itc_ctl_left]
 itc_ent_right_sel = [itc.pick_channels(occ_r, copy=True) for
-                       itc in itc_ent_right]
+                     itc in itc_ent_right]
 itc_ctl_right_sel = [itc.pick_channels(occ_r, copy=True) for
-                       itc in itc_ctl_right]
+                     itc in itc_ctl_right]
 
 
 mp_ent_left_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ent_left_sel], axis=1), axis=1)
+                                   itc in itc_ent_left_sel], axis=1), axis=1)
 mp_ctl_left_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ctl_left_sel], axis=1), axis=1)
+                                   itc in itc_ctl_left_sel], axis=1), axis=1)
 mp_ent_right_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ent_right_sel], axis=1), axis=1)
+                                    itc in itc_ent_right_sel], axis=1), axis=1)
 mp_ctl_right_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ctl_right_sel], axis=1), axis=1)
+                                    itc in itc_ctl_right_sel], axis=1), axis=1)
 
 plt.figure()
-plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm', label="ent_right", linewidth=3)
-plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k', label="ctl_right", linewidth=3)
-plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b', label="ctl_left", linewidth=3)
-plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r', label="ent_left", linewidth=3)
+plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm',
+         label="ent_right", linewidth=3)
+plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k',
+         label="ctl_right", linewidth=3)
+plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b',
+         label="ctl_left", linewidth=3)
+plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r',
+         label="ent_left", linewidth=3)
 plt.legend()
 plt.title("ITC: Right occ sensors")
 plt.xlabel("time (in ms)")
@@ -200,70 +216,35 @@ plt.ylabel("ITC value")
 plt.savefig(tf_folder + "pics/itc_right_occ_sens.png")
 
 itc_ent_left_sel = [itc.pick_channels(occ_l, copy=True) for
-                      itc in itc_ent_left]
+                    itc in itc_ent_left]
 itc_ctl_left_sel = [itc.pick_channels(occ_l, copy=True) for
-                      itc in itc_ctl_left]
+                    itc in itc_ctl_left]
 itc_ent_right_sel = [itc.pick_channels(occ_l, copy=True) for
-                       itc in itc_ent_right]
+                     itc in itc_ent_right]
 itc_ctl_right_sel = [itc.pick_channels(occ_l, copy=True) for
-                       itc in itc_ctl_right]
+                     itc in itc_ctl_right]
 
 
 mp_ent_left_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ent_left_sel], axis=1), axis=1)
+                                   itc in itc_ent_left_sel], axis=1), axis=1)
 mp_ctl_left_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ctl_left_sel], axis=1), axis=1)
+                                   itc in itc_ctl_left_sel], axis=1), axis=1)
 mp_ent_right_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ent_right_sel], axis=1), axis=1)
+                                    itc in itc_ent_right_sel], axis=1), axis=1)
 mp_ctl_right_sel = np.mean(np.mean([itc.data[:, 2:-3, :] for
-                           itc in itc_ctl_right_sel], axis=1), axis=1)
+                                    itc in itc_ctl_right_sel], axis=1), axis=1)
 
 plt.figure()
-plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm', label="ent_right", linewidth=3)
-plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k', label="ctl_right", linewidth=3)
-plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b', label="ctl_left", linewidth=3)
-plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r', label="ent_left", linewidth=3)
+plt.plot(times, mp_ent_right_sel.mean(axis=0), 'm',
+         label="ent_right", linewidth=3)
+plt.plot(times, mp_ctl_right_sel.mean(axis=0), 'k',
+         label="ctl_right", linewidth=3)
+plt.plot(times, mp_ctl_left_sel.mean(axis=0), 'b',
+         label="ctl_left", linewidth=3)
+plt.plot(times, mp_ent_left_sel.mean(axis=0), 'r',
+         label="ent_left", linewidth=3)
 plt.legend()
 plt.title("ITC: Left occ sensors")
 plt.xlabel("time (in ms)")
 plt.ylabel("ITC value")
 plt.savefig(tf_folder + "pics/itc_left_occ_sens.png")
-
-
-
-# Baseline correction can be applied to power or done in plots
-# To illustrate the baseline correction in plots the next line is commented
-# power.apply_baseline(baseline=(-0.5, 0), mode='logratio')
-
-# Inspect power
-power.plot_topo(baseline=(-0.5, 0), mode='logratio', title='Average power')
-power.plot([82], baseline=(-0.5, 0), mode='logratio')
-
-fig, axis = plt.subplots(1, 2, figsize=(7, 4))
-power.plot_topomap(ch_type='grad', tmin=0.5, tmax=1.5, fmin=8, fmax=12,
-                   baseline=(-0.5, 0), mode='logratio', axes=axis[0],
-                   title='Alpha', vmax=0.45)
-power.plot_topomap(ch_type='grad', tmin=0.5, tmax=1.5, fmin=13, fmax=25,
-                   baseline=(-0.5, 0), mode='logratio', axes=axis[1],
-                   title='Beta', vmax=0.45)
-mne.viz.tight_layout()
-
-# Inspect ITC
-itc.plot_topo(title='Inter-Trial coherence', vmin=0., vmax=1., cmap='Reds')
-
-
-# for subject in subjects:
-#     compute_tf(subject)
-
-occ_r = mne.read_selection("Right-occipital")
-occ_r_cl = [o[:3] + o[4:] for o in occ_r]
-
-foo = []
-for pow in power_all:
-    foo.append(pow.pick_channels(occ_cl))
-
-pow_sel_ga = []
-
-
-
-
