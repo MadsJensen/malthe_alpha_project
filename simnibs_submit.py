@@ -41,9 +41,9 @@ script_dir = proj_folder + '/scripts/'
 included_subjects = db.get_subjects()
 # just test with first one!
 
-#sub_new = []
+# sub_new = []
 #
-#for sub in included_subjects:
+# for sub in included_subjects:
 #    if not os.path.isfile(fs_subjects_dir +
 #                          "%s/%s_t1.nii.gz" % (sub[:4], sub[:4])):
 #        # this is an example of getting the DICOM files as a list
@@ -67,21 +67,18 @@ included_subjects = db.get_subjects()
 #            print(convert_t1)
 #            convert_t2 = "mri_convert %s %s_t2.nii.gz" % (in_t2[0], subj_fname)
 #            print(convert_t2)
-#            
+#
 #            os.chdir(fs_subjects_dir + subj_fname)
 #            subprocess.call([cmd, "1", convert_t1])
 #            subprocess.call([cmd, "1", convert_t2])
 
 
 for sub in included_subjects:
-    run_simnibs = "mri2mesh --all %s %s_t1.nii.gz %s_t2.nii.gz"  \
+    run_simnibs = "mri2mesh --brain --subcort --head " +\
+                  "%s %s_t1.nii.gz %s_t2.nii.gz"  \
                   % (sub[:4], sub[:4], sub[:4])
 
-#    if os.path.isfile(fs_subjects_dir +
-#                      "%s/%s_t1.nii.gz" % (sub[:4], sub[:4])) &\
-#        os.path.isfile(fs_subjects_dir +
-#                       "%s/%s_t2.nii.gz" % (sub[:4], sub[:4])):
-        if os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
-                          % (sub[:4], sub[:4])):
-          os.chdir(fs_subjects_dir + sub[:4])
-          subprocess.call([cmd, "1", run_simnibs])
+    if os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
+                      % (sub[:4], sub[:4])):
+        os.chdir(fs_subjects_dir + sub[:4])
+        subprocess.call([cmd, "1", run_simnibs])
