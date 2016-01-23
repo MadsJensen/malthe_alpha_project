@@ -78,7 +78,7 @@ for sub in included_subjects:
                   "%s %s_t1.nii.gz %s_t2.nii.gz"  \
                   % (sub[:4], sub[:4], sub[:4])
 
-    if os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
-                      % (sub[:4], sub[:4])):
+    if not os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
+                          % (sub[:4], sub[:4])):
         os.chdir(fs_subjects_dir + sub[:4])
         subprocess.call([cmd, "1", run_simnibs])
