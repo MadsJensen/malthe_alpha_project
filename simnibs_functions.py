@@ -58,9 +58,9 @@ def convert_surfaces(subject, subjects_dir):
     subjects_dir : string
         The subjects dir for FreeSurfer
     """
-    convert_csf = "meshfix csf.stl -u 10 --vertices 2049 --fsmesh"
-    convert_skull = "meshfix skull.stl -u 10 --vertices 2049 --fsmesh"
-    convert_skin = "meshfix skin.stl -u 10 --vertices 2049 --fsmesh"
+    convert_csf = "meshfix csf.stl -u 10 --vertices 4098 --fsmesh"
+    convert_skull = "meshfix skull.stl -u 10 --vertices 4098 --fsmesh"
+    convert_skin = "meshfix skin.stl -u 10 --vertices 4098 --fsmesh"
 
     os.chdir(fs_subjects_dir + subject[:4] + "/m2m_%s" % subject[:4])
     subprocess.call([cmd, "1", convert_csf])
@@ -68,5 +68,47 @@ def convert_surfaces(subject, subjects_dir):
     subprocess.call([cmd, "1", convert_skin])
 
 
-for subject in included_subjects[:4]:
+def copy_surfaces(subject, subjects_dir):
+    """Copy the converted FreeSurfer surfaces to the bem dir.
+
+    Parameters
+    ----------
+    subject : string
+       The name of the subject
+    subjects_dir : string
+        The subjects dir for FreeSurfer
+    """
+    os.chdir(fs_subjects_dir + subject[:4] + "/m2m_%s" % subject[:4])
+    copy_inner_skull = "cp -f csf_fixed.fsmesh " + subjects_dir + \
+                       "/%s/bem/inner_skull.surf" % subject[:4]
+    copy_outer_skull = "cp -f skull_fixed.fsmesh " + subjects_dir + \
+                       "/%s/bem/outer_skull.surf" % subject[:4]
+    copy_outer_skin = "cp -f skin_fixed.fsmesh " + subjects_dir + \
+                       "/%s/bem/outer_skin.surf" % subject[:4]
+
+    subprocess.call([cmd, "1", copy_inner_skull])
+    subprocess.call([cmd, "1", copy_outer_skull])
+    subprocess.call([cmd, "1", copy_outer_skin])
+
+    os.chdir(fs_subjects_dir + subject[:4] + "/bem")
+    convert_skin_to_head = "mne_surf2bem --surf outer_skin.surf --fif %s-head.fif --id 4" % subject[:4]
+    subprocess.call([cmd, "1", convert_skin_to_head])
+
+
+def setup_mne_c_forward(subject):
+    setup_forward = "mne_setup_forward_model --subject %s --surf --ico -6" %subject[:4]
+    subprocess.call([cmd, "1", setup_forward])
+
+
+for subject in included_subjects[7:]:
     make_symbolic_links(subject, fs_subjects_dir)
+        
+for subject in included_subjects[7:]:
+    convert_surfaces(subject, fs_subjects_dir)    
+
+for subject in included_subjects[7:]:
+    copy_surfaces(subject, fs_subjects_dir)    
+
+for subject in included_subjects[7:]:
+    setup_mne_c_forward(subject)    
+
