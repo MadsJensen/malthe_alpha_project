@@ -58,9 +58,9 @@ def convert_surfaces(subject, subjects_dir):
     subjects_dir : string
         The subjects dir for FreeSurfer
     """
-    convert_csf = "meshfix csf.stl -u 10 --vertices 5120 --fsmesh"
-    convert_skull = "meshfix skull.stl -u 10 --vertices 5120 --fsmesh"
-    convert_skin = "meshfix skin.stl -u 10 --vertices 5120 --fsmesh"
+    convert_csf = "meshfix csf.stl -u 10 --vertices 2049 --fsmesh"
+    convert_skull = "meshfix skull.stl -u 10 --vertices 2049 --fsmesh"
+    convert_skin = "meshfix skin.stl -u 10 --vertices 2049 --fsmesh"
 
     os.chdir(fs_subjects_dir + subject[:4] + "/m2m_%s" % subject[:4])
     subprocess.call([cmd, "1", convert_csf])
