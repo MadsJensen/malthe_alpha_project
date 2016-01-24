@@ -32,7 +32,7 @@ script_dir = proj_folder + '/scripts/'
 included_subjects = db.get_subjects()
 
 
-def make_symbolic_links(fname, subjects_dir):
+def make_symbolic_links(subject, subjects_dir):
     """Make symblic links between FS dir and subjects_dir.
 
     Parameters
@@ -43,7 +43,7 @@ def make_symbolic_links(fname, subjects_dir):
         The subjects dir for FreeSurfer
     """
 
-    make_links = "ln -s fs_%s/. *" % subject
+    make_links = "ln -s fs_%s/* ." % subject[:4]
     os.chdir(fs_subjects_dir + subject[:4])
     subprocess.call([cmd, "1", make_links])
 
