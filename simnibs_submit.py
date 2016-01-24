@@ -73,12 +73,13 @@ included_subjects = db.get_subjects()
 #            subprocess.call([cmd, "1", convert_t2])
 
 
-for sub in included_subjects:
+for sub in included_subjects[14:]:
     run_simnibs = "mri2mesh --brain --subcort --head " +\
                   "%s %s_t1.nii.gz %s_t2.nii.gz"  \
                   % (sub[:4], sub[:4], sub[:4])
 
-    if not os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
-                          % (sub[:4], sub[:4])):
-        os.chdir(fs_subjects_dir + sub[:4])
+    if os.path.isfile(fs_subjects_dir + "%s/m2m_%s/csf.stl"
+                          % (sub[:4], sub[:4])) is False:
+        # print("%s" % sub) 
+        os.chdir(fs_subjects_dir + sub[:4]) 
         subprocess.call([cmd, "1", run_simnibs])
