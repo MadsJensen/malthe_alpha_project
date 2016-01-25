@@ -19,8 +19,7 @@ if hostname == "Wintermute":
     # data_path = "/home/mje/Projects/malthe_alpha_project/data/"
     # data_path = "/home/mje/mnt/scratch/MINDLAB2015_MEG-CorticalAlphaAttention/"
 else:
-    data_path = "/projects/" + \
-                "projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+    data_path = "/projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
 
 # CHANGE DIR TO SAVE FILES THE RIGTH PLACE
 os.chdir(data_path)
@@ -107,4 +106,4 @@ cov.save("subj_2-cov.fif")
 inv = make_inverse_operator(epochs.info, fwd, cov,
                             loose=0.2, depth=0.8)
 
-mne.minimum_norm.write_inverse_operator("subj_2-inv.fif", inv)
+mne.minimum_norm.write_inverse_operator("0004-inv.fif", inv)
