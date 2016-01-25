@@ -100,15 +100,15 @@ def setup_mne_c_forward(subject):
     subprocess.call([cmd, "1", setup_forward])
 
 
-for subject in included_subjects[7:]:
+for subject in included_subjects[3:5]:
     make_symbolic_links(subject, fs_subjects_dir)
         
-for subject in included_subjects[7:]:
+for subject in included_subjects[3:5]:
     convert_surfaces(subject, fs_subjects_dir)    
 
-for subject in included_subjects[7:]:
+for subject in included_subjects[3:5]:
     copy_surfaces(subject, fs_subjects_dir)    
 
-for subject in included_subjects[7:]:
+for subject in included_subjects[3:5]:
     setup_mne_c_forward(subject)    
 
