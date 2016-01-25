@@ -14,38 +14,48 @@ import numpy as np
 # SETUP PATHS AND PREPARE RAW DATA
 hostname = socket.gethostname()
 
-if hostname == "Wintermute":
+if hostname == "wintermute":
     data_path = "/home/mje/mnt/caa/scratch/"
     # data_path = "/home/mje/Projects/malthe_alpha_project/data/"
     # data_path = "/home/mje/mnt/scratch/MINDLAB2015_MEG-CorticalAlphaAttention/"
 else:
-    data_path = "/projects/" + \
-                "projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
+    data_path = "projects/MINDLAB2015_MEG-CorticalAlphaAttention/scratch/"
 
 # CHANGE DIR TO SAVE FILES THE RIGTH PLACE
 os.chdir(data_path)
 
 subjects_dir = data_path + "fs_subjects_dir/"
+save_folder = data_path + "filter_ica_data/"
+maxfiltered_folder = data_path + "maxfiltered_data/"
+epochs_folder = data_path + "epoched_data/"
+tf_folder = data_path + "tf_data/"
+mne_folder = data_path + "minimum_norm/"
 
-raw_fname = data_path + "subj_2_filter_ica-mc_raw_tsss.fif"
-bem = mne.read_bem_solution(subjects_dir + "/0002/bem/" +
-                            "subj_2-5120-5120-5120-bem-sol.fif")
 
-# src = mne.setup_source_space("0002",
-#                              "subj_2-oct6-src.fif",
-#                              spacing="oct6",
-#                              subjects_dir=subjects_dir,
-#                              n_jobs=2)
+
+raw_fname = save_folder + "0004_filtered_ica_mc_raw_tsss.fif"
+trans_fname = mne_folder + "0004-trn-trans.fif"
+cov_fname = mne_folder + "0004-cov.fif"
+
+bem = mne.read_bem_solution(subjects_dir + "/0004/bem/" +
+                            "0004-10236-10236-10240-bem-sol.fif")
+cov = mne.read_cov(cov_fname)
+
+
+src = mne.setup_source_space(                             "0004-oct6-src.fif",
+                             spacing="oct6",
+                             subjects_dir=subjects_dir,
+                             n_jobs=2)
 src = mne.read_source_spaces(data_path + "subj_2-oct6-src.fif")
 
-# fwd = mne.make_forward_solution(raw_fname, trans=None,
-#                                 src=src,
-#                                 bem=bem,
-#                                 meg=True,
-#                                 eeg=True,
-#                                 fname="subj_2-fwd.fif")
+fwd = mne.make_forward_solution(raw_fname, trans=trans_fname,
+                                src=src,
+                                bem=bem,
+                                meg=True,
+                                eeg=True,
+                                fname=mne_folder + "0004-fwd.fif")
 
-fwd = mne.read_forward_solution("subj_2-fwd.fif")
+fwd = mne.read_forward_solution(mne_folder + "subj_2-fwd.fif")
 
 raw = mne.io.Raw(raw_fname, preload=False)
 
@@ -107,4 +117,4 @@ cov.save("subj_2-cov.fif")
 inv = make_inverse_operator(epochs.info, fwd, cov,
                             loose=0.2, depth=0.8)
 
-mne.minimum_norm.write_inverse_operator("subj_2-inv.fif", inv)
+mne.minimum_norm.write_inverse_operator(mne_folder + "0004-inv.fif", inv)
