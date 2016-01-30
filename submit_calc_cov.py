@@ -29,11 +29,11 @@ mne_folder = data_path + "minimum_norm/"
 os.chdir(mne_folder)
 
 # import subject from commandline arg
-sub = str(sys.argv[1])
+subject = str(sys.argv[1])
 
 
 epochs = mne.read_epochs(epochs_folder +
-                         "%s_filtered_ica_mc_tsss-epo.fif" % sub)
+                         "%s_filtered_ica_mc_tsss-epo.fif" % subject)
 cov = mne.compute_covariance(epochs, tmin=None, tmax=-0.01,
                              method="factor_analysis")
-cov.save(mne_folder + "%s-cov.fif" % sub)
+cov.save(mne_folder + "%s-cov.fif" % subject)
