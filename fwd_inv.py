@@ -65,7 +65,15 @@ for j, sub in enumerate(subjects):
 
 # Calculate covariance matrix
 
- 
+best_fit = []
+for sub in subjects[2:]:
+    epochs = mne.read_epochs(epochs_folder + "%s_filtered_ica_mc_tsss-epo.fif" % sub)
+    cov = mne.compute_covariance(epochs, tmin=None, tmax=-0.01,
+                                 method="factor_analysis")
+    best_fit.append({"method": cov["method"], "loglik": cov["loglik"]})
+#    cov = cov[0]                                 
+    cov.save(mne_folder + "%s-cov.fif" % sub)
+
 
 # Make inverse model
 for sub in subjects:
