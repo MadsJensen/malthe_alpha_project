@@ -9,6 +9,9 @@ import socket
 import mne
 from mne.minimum_norm import make_inverse_operator
 import os
+import subprocess
+
+cmd = "/usr/local/common/meeg-cfin/configurations/bin/submit_to_isis"
 
 # SETUP PATHS AND PREPARE RAW DATA
 hostname = socket.gethostname()
@@ -34,14 +37,14 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
             "0022", "0023", "0024", "0025"]  # subject to run
 
 os.chdir(mne_folder)
-bem_list = !ls * 8192-8192*sol.fif
+bem_list = !ls *8192-8192*sol.fif
 
-subjects = ["0004"]
+subjects = ["0004", "0005"]
 
 # Setup source space and forward model
-for j, sub in enumerate(subjects):
+for j, sub in enumerate(subjects):    
     raw_fname = save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % sub
-    trans_fname = mne_folder + "%s-trn-trans.fif" % sub
+    trans_fname = mne_folder + "%s-trans.fif" % sub
     bem = bem_list[j]
     cov = mne.read_cov(mne_folder + "%s-cov.fif" % sub)
 #    cov = cov[0]
@@ -61,20 +64,15 @@ for j, sub in enumerate(subjects):
 
 
 # Calculate covariance matrix
-for sub in subjects:
-    epochs = mne.read_epochs(epochs_folder +
-                             "%s_filtered_ica_mc_tsss-epo.fif" % sub)
-    cov = mne.compute_covariance(epochs, tmin=None, tmax=-0.01,
-                                 method="auto", return_estimators="all")
-    cov.save(mne_folder + "%s-cov.fif" % sub)
 
+ 
 
 # Make inverse model
 for sub in subjects:
     fwd = mne.read_forward_solution(mne_folder + "%s-fwd.fif" % sub)
     cov = mne.read_cov(mne_folder + "%s-cov.fif" % sub)
-    epochs = mne.read_epochs(epochs_folder +
-                             "%s_filtered_ica_mc_tsss-epo.fif" % sub)
+    epochs = mne.read_epochs(epochs_folder +\
+                            "%s_filtered_ica_mc_tsss-epo.fif" % sub)
     inv = make_inverse_operator(epochs.info, fwd, cov,
                                 loose=0.2, depth=0.8)
 
