@@ -8,6 +8,7 @@ Doc string here.
 import os
 import sys
 import subprocess
+import socket
 
 cmd = "/usr/local/common/meeg-cfin/configurations/bin/submit_to_isis"
 
@@ -32,5 +33,5 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
 
 
 for subject in subjects[2:]:
-    submit_cmd = "python submit_calc_cov %s" % subject
+    submit_cmd = "python submit_calc_cov.py %s" % subject
     subprocess.call([cmd, "1", submit_cmd])
