@@ -9,7 +9,8 @@ import socket
 import mne
 from mne.minimum_norm import make_inverse_operator
 import os
-import subprocess
+# import subprocess
+import glob
 
 cmd = "/usr/local/common/meeg-cfin/configurations/bin/submit_to_isis"
 
@@ -43,15 +44,14 @@ bem_list = glob.glob("*8192-8192*sol.fif")
 subjects = ["0004", "0005"]
 
 # Setup source space and forward model
-for j, sub in enumerate(subjects):
-    raw_fname = save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % sub
-    trans_fname = mne_folder + "%s-trans.fif" % sub
+for j, subject in enumerate(subjects):
+    raw_fname = save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % subject
+    trans_fname = mne_folder + "%s-trans.fif" % subject
     bem = bem_list[j]
-    cov = mne.read_cov(mne_folder + "%s-cov.fif" % sub)
-#    cov = cov[0]
+    cov = mne.read_cov(mne_folder + "%s-cov.fif" % subject)
 
-    src = mne.setup_source_space(sub,
-                                 mne_folder + "%s-oct6-src.fif" % sub,
+    src = mne.setup_source_space(subject,
+                                 mne_folder + "%s-oct6-src.fif" % subject,
                                  spacing="oct6",
                                  subjects_dir=subjects_dir,
                                  n_jobs=2)  # use a job for each hemispere
@@ -61,29 +61,30 @@ for j, sub in enumerate(subjects):
                                     bem=bem,
                                     meg=True,
                                     eeg=True,
-                                    fname=mne_folder + "%s-fwd.fif" % sub)
+                                    fname=mne_folder + "%s-fwd.fif" % subject)
 
 
 # Calculate covariance matrix
 best_fit = []
-for sub in subjects[2:]:
+for subject in subjects[2:]:
     epochs = mne.read_epochs(epochs_folder +
-                             "%s_filtered_ica_mc_tsss-epo.fif" % sub)
+                             "%s_filtered_ica_mc_tsss-epo.fif" % subject)
     cov = mne.compute_covariance(epochs, tmin=None, tmax=-0.01,
                                  method="auto", return_estimators="all")
     best_fit.append({"method": cov[0]["method"], "loglik": cov[0]["loglik"]})
     cov = cov[0]
-    cov.save(mne_folder + "%s-cov.fif" % sub, overwrite=True)
+    cov.save(mne_folder + "%s-cov.fif" % subject, overwrite=True)
 
 
 # Make inverse model
-for sub in subjects:
-    fwd = mne.read_forward_solution(mne_folder + "%s-fwd.fif" % sub)
-    cov = mne.read_cov(mne_folder + "%s-cov.fif" % sub)
-    epochs = mne.read_epochs(epochs_folder +\
-                            "%s_filtered_ica_mc_tsss-epo.fif" % sub)
+for subject in subjects:
+    fwd = mne.read_forward_solution(mne_folder + "%s-fwd.fif" % subject)
+    cov = mne.read_cov(mne_folder + "%s-cov.fif" % subject)
+    epochs = mne.read_epochs(epochs_folder +
+                             "%s_filtered_ica_mc_tsss-epo.fif" % subject)
     inv = make_inverse_operator(epochs.info, fwd, cov,
                                 loose=0.2, depth=0.8)
 
-    mne.minimum_norm.write_inverse_operator(mne_folder + "%s-inv.fif" % sub,
+    mne.minimum_norm.write_inverse_operator(mne_folder +
+                                            "%s-inv.fif" % subject,
                                             inv)
