@@ -37,12 +37,13 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
             "0022", "0023", "0024", "0025"]  # subject to run
 
 os.chdir(mne_folder)
-bem_list = !ls *8192-8192*sol.fif
+bem_list = glob.glob("*8192-8192*sol.fif")
+# bem_list = !ls *8192-8192*sol.fif
 
 subjects = ["0004", "0005"]
 
 # Setup source space and forward model
-for j, sub in enumerate(subjects):    
+for j, sub in enumerate(subjects):
     raw_fname = save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % sub
     trans_fname = mne_folder + "%s-trans.fif" % sub
     bem = bem_list[j]
