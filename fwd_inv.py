@@ -39,12 +39,14 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
 
 os.chdir(mne_folder)
 bem_list = glob.glob("*8192-8192*sol.fif")
-# bem_list = !ls *8192-8192*sol.fif
+bem_list.sort()
 
 subjects = ["0004", "0005"]
 
 # Setup source space and forward model
-for j, subject in enumerate(subjects):
+for j, subject in enumerate(subjects[1:11]):
+    print("Workingt on subject: %s" % subject )
+    
     raw_fname = save_folder + "%s_filtered_ica_mc_raw_tsss.fif" % subject
     trans_fname = mne_folder + "%s-trans.fif" % subject
     bem = bem_list[j]
@@ -54,14 +56,16 @@ for j, subject in enumerate(subjects):
                                  mne_folder + "%s-oct6-src.fif" % subject,
                                  spacing="oct6",
                                  subjects_dir=subjects_dir,
-                                 n_jobs=2)  # use a job for each hemispere
+                                 n_jobs=2,
+                                 overwrite=True)  # use a job for each hemispere
 
     fwd = mne.make_forward_solution(raw_fname, trans=trans_fname,
                                     src=src,
                                     bem=bem,
                                     meg=True,
                                     eeg=True,
-                                    fname=mne_folder + "%s-fwd.fif" % subject)
+                                    fname=mne_folder + "%s-fwd.fif" % subject,
+                                    overwrite=True)
 
 
 # Calculate covariance matrix
