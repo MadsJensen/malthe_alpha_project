@@ -18,7 +18,7 @@ import pandas as pd
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
 
-if hostname == "Wintermute":
+if hostname == "wintermute":
     data_path = "/home/mje/mnt/caa/scratch/"
     n_jobs = 1
 else:
