@@ -35,25 +35,60 @@ def calc_ALI(subject, show_plot=False):
     """
     ctl_left_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_%s_left_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ctl_left_OCCIPITAL_lh_MNE" % (subject))
     ctl_right_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_%s_left_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ctl_left_OCCIPITAL_rh_MNE" % (subject))
     ctl_left_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_%s_right_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ctl_right_OCCIPITAL_lh_MNE" % (subject))
     ctl_right_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_%s_right_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ctl_right_OCCIPITAL_rh_MNE" % (subject))
 
-    ALI_left_cue = ((ctl_left_roi_left_cue.data.mean(axis=0) -
-                     ctl_right_roi_left_cue.data.mean(axis=0)) /
-                    (ctl_left_roi_left_cue.data.mean(axis=0) +
-                     ctl_right_roi_left_cue.data.mean(axis=0)))
+    ALI_left_cue_ctl = ((ctl_left_roi_left_cue.data.mean(axis=0) -
+                         ctl_right_roi_left_cue.data.mean(axis=0)) /
+                        (ctl_left_roi_left_cue.data.mean(axis=0) +
+                         ctl_right_roi_left_cue.data.mean(axis=0)))
 
-    ALI_right_cue = ((ctl_left_roi_right_cue.data.mean(axis=0) -
-                      ctl_right_roi_right_cue.data.mean(axis=0)) /
-                     (ctl_left_roi_right_cue.data.mean(axis=0) +
-                      ctl_right_roi_right_cue.data.mean(axis=0)))
+    ALI_right_cue_ctl = ((ctl_left_roi_right_cue.data.mean(axis=0) -
+                          ctl_right_roi_right_cue.data.mean(axis=0)) /
+                         (ctl_left_roi_right_cue.data.mean(axis=0) +
+                          ctl_right_roi_right_cue.data.mean(axis=0)))
 
-    return ALI_left_cue, ALI_right_cue
+    ent_left_roi_left_cue =\
+        mne.read_source_estimate(tf_folder +
+                                 "BP_%s_ent_left_OCCIPITAL_lh_MNE" % (subject))
+    ent_right_roi_left_cue =\
+        mne.read_source_estimate(tf_folder +
+                                 "BP_%s_ent_left_OCCIPITAL_rh_MNE" % (subject))
+    ent_left_roi_right_cue =\
+        mne.read_source_estimate(tf_folder +
+                                 "BP_%s_ent_right_OCCIPITAL_lh_MNE" % (subject))
+    ent_right_roi_right_cue =\
+        mne.read_source_estimate(tf_folder +
+                                 "BP_%s_ent_right_OCCIPITAL_rh_MNE" % (subject))
+
+    ALI_left_cue_ent = ((ent_left_roi_left_cue.data.mean(axis=0) -
+                         ent_right_roi_left_cue.data.mean(axis=0)) /
+                        (ent_left_roi_left_cue.data.mean(axis=0) +
+                         ent_right_roi_left_cue.data.mean(axis=0)))
+
+    ALI_right_cue_ent = ((ent_left_roi_right_cue.data.mean(axis=0) -
+                          ent_right_roi_right_cue.data.mean(axis=0)) /
+                         (ent_left_roi_right_cue.data.mean(axis=0) +
+                          ent_right_roi_right_cue.data.mean(axis=0)))
+
+    if show_plot:
+        times = ent_left_roi_left_cue.times
+        plt.figure()
+        plt.plot(times, ALI_left_cue_ctl, 'r', label="ALI Left cue control")
+        plt.plot(times, ALI_left_cue_ent, 'b', label="ALI Left ent control")
+        plt.plot(times, ALI_right_cue_ctl, 'g', label="ALI Right cue control")
+        plt.plot(times, ALI_right_cue_ent, 'm', label="ALI Right ent control")
+        plt.legend()
+        plt.title("ALI curves for subject: %s" % subject)
+        plt.show()
+
+    return (ALI_left_cue_ctl, ALI_right_cue_ctl,
+            ALI_left_cue_ent, ALI_right_cue_ent)
