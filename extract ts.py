@@ -13,7 +13,7 @@ import socket
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-#import seaborn as sns
+# import seaborn as sns
 
 import socket
 import mne
@@ -65,7 +65,6 @@ conditions = [e.comment for e in evokeds]
 for cond, col, pos in zip(conditions, colors, (0.02, 0.07, 0.12, 0.17)):
     plt.figtext(0.97, pos, cond, color=col, fontsize=12,
                 horizontalalignment='right')
-
 
 
 # Get evoked data (averaging across trials in sensor space)
@@ -155,14 +154,14 @@ for j in range(len(subjects)):
                                                       mode="pca_flip"))
 
     lbl_ent_right.append(mne.extract_label_time_course(ent_right[j],
-                                                      labels=labels_occ,
-                                                      src=src,
-                                                      mode="pca_flip"))
+                                                       labels=labels_occ,
+                                                       src=src,
+                                                       mode="pca_flip"))
 
     lbl_ctl_right.append(mne.extract_label_time_course(ctl_right[j],
-                                                      labels=labels_occ,
-                                                      src=src,
-                                                      mode="pca_flip"))
+                                                       labels=labels_occ,
+                                                       src=src,
+                                                       mode="pca_flip"))
 
 
 lbl_ent_left = np.squeeze(np.asarray(lbl_ent_left))
@@ -173,39 +172,38 @@ lbl_ctl_right = np.squeeze(np.asarray(lbl_ctl_right))
 times = stc_0004_ent_left.times
 
 plt.figure()
-plt.plot(times, lbl_ent_left[:, 0, :].mean(axis=0),'b', label="ent_left")
-plt.plot(times, lbl_ent_right[:, 0, :].mean(axis=0),'g', label="ent_right")
-plt.plot(times, lbl_ctl_left[:, 0, :].mean(axis=0),'r', label="ctl_left")
-plt.plot(times, lbl_ctl_right[:, 0, :].mean(axis=0),'m', label="ctl_right")
+plt.plot(times, lbl_ent_left[:, 0, :].mean(axis=0), 'b', label="ent_left")
+plt.plot(times, lbl_ent_right[:, 0, :].mean(axis=0), 'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 0, :].mean(axis=0), 'r', label="ctl_left")
+plt.plot(times, lbl_ctl_right[:, 0, :].mean(axis=0), 'm', label="ctl_right")
 plt.legend()
 plt.title("label: %s" % labels_occ[0].name)
 plt.show()
 
 
 plt.figure()
-plt.plot(times, lbl_ent_left[:, 1, :].mean(axis=0),'b', label="ent_left")
-plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0),'g', label="ent_right")
-plt.plot(times, lbl_ctl_left[:, 1, :].mean(axis=0),'r', label="ctl_left")
-plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0),'m', label="ctl_right")
+plt.plot(times, lbl_ent_left[:, 1, :].mean(axis=0), 'b', label="ent_left")
+plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0), 'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 1, :].mean(axis=0), 'r', label="ctl_left")
+plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0), 'm', label="ctl_right")
 plt.legend()
 plt.title("label: %s" % labels_occ[1].name)
 plt.show()
 
 
 plt.figure()
-plt.plot(times, lbl_ent_left[:, 1, :].T,'b', label="ent_left")
-#plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0),'g', label="ent_right")
-plt.plot(times, lbl_ctl_left[:, 1, :].T,'r', label="ctl_left")
-#plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0),'m', label="ctl_right")
+plt.plot(times, lbl_ent_left[:, 1, :].T, 'b', label="ent_left")
+# plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0),'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 1, :].T, 'r', label="ctl_left")
+# plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0),'m', label="ctl_right")
 plt.legend()
 plt.title("label: %s" % labels_occ[1].name)
 plt.show()
 
 
-
-#for label in labels_occ:
+# for label in labels_occ:
 #    plt.figure()
-#    plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
+#    plt.plot(times[:425],stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
 #             'r', linewidth=2, label="ctl_left")
 #    plt.plot(times[:425], stc_ctl_right.in_label(label).data.mean(axis=0)[:425],
 #             'm', linewidth=2, label="ctl_right")
@@ -252,12 +250,12 @@ n_cycles = frequencies / 3.  # different number of cycle per frequency
 labels_occ = [labels[10]]
 
 # plt.close('all')
-for cond in ["ent_left_pas_3", "ent_left_pas_2"]: #epochs.event_id.keys():
+for cond in ["ent_left_pas_3", "ent_left_pas_2"]:  # epochs.event_id.keys():
     for label in labels_occ:
         plt.figure()
         epochs_induced = epochs[cond].copy().subtract_evoked()
         for ii, (this_epochs, title) in enumerate(zip([epochs["ent_left_pas_3",
-                                                              "ent_left_pas_2"# "ent_left",
+                                                              "ent_left_pas_2"
                                                               # "ent_right",
                                                               # "ctl_left",
                                                               # "ctl_right"
@@ -346,20 +344,20 @@ for subject in subjects:
             BP_list.append("BP_%s_%s_%s" % (subject, cond, l_name))
 
             exec("BP_%s_%s_%s = stcs['alpha']" % (subject, cond, l_name))
-            stcs["alpha"].save(tf_folder + "BP_%s_%s_%s_%s" 
+            stcs["alpha"].save(tf_folder + "BP_%s_%s_%s_%s"
                                % (subject, cond, l_name, method))
 
 
 # difference waves plots
-super_ctl = (BP_ctl_left_OCCIPITAL_lh.data.mean(axis=0) + 
+super_ctl = (BP_ctl_left_OCCIPITAL_lh.data.mean(axis=0) +
              BP_ctl_right_OCCIPITAL_rh.data.mean(axis=0)) -\
-             (BP_ctl_left_OCCIPITAL_rh.data.mean(axis=0) + 
-             BP_ctl_right_OCCIPITAL_lh.data.mean(axis=0))
+             (BP_ctl_left_OCCIPITAL_rh.data.mean(axis=0) +
+              BP_ctl_right_OCCIPITAL_lh.data.mean(axis=0))
 
-super_ent = (BP_ent_left_OCCIPITAL_lh.data.mean(axis=0) + 
+super_ent = (BP_ent_left_OCCIPITAL_lh.data.mean(axis=0) +
              BP_ent_right_OCCIPITAL_rh.data.mean(axis=0)) -\
-             (BP_ent_left_OCCIPITAL_rh.data.mean(axis=0) + 
-             BP_ent_right_OCCIPITAL_lh.data.mean(axis=0))
+             (BP_ent_left_OCCIPITAL_rh.data.mean(axis=0) +
+              BP_ent_right_OCCIPITAL_lh.data.mean(axis=0))
 
 times = BP_ctl_left_OCCIPITAL_lh.times
 
@@ -371,38 +369,38 @@ plt.legend()
 plt.title("Joint power difference waves (power)")
 plt.ylabel("zscore")
 plt.xlabel("Time (seconds)")
-#plt.savefig("%s_BP_alpha.png" % label.name)
- 
-    plt.figure()
-    plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
-             linewidth=2, label="ent_left")
+# plt.savefig("%s_BP_alpha.png" % label.name)
+
+plt.figure()
+plt.plot(times, source_psd_ent_left.mean(axis=0), 'b',
+         linewidth=2, label="ent_left")
 #    plt.plot(times, source_psd_ent_left.mean(axis=0) +
 #             source_psd_ent_left.std(axis=0), 'b--')
 #    plt.plot(times, source_psd_ent_left.mean(axis=0) -
 #             source_psd_ent_left.std(axis=0), 'b--')
 
-    plt.plot(times, source_psd_ctl_left.mean(axis=0), 'r',
-             linewidth=2, label="ctl_left")
+plt.plot(times, source_psd_ctl_left.mean(axis=0), 'r',
+         linewidth=2, label="ctl_left")
 #    plt.plot(times, source_psd_ctl_left.mean(axis=0) -
 #             source_psd_ctl_left.std(axis=0), 'r--')
 #    plt.plot(times, source_psd_ctl_left.mean(axis=0) +
 #             source_psd_ctl_left.std(axis=0), 'r--')
 
-    plt.plot(times, source_psd_ent_right.mean(axis=0), 'g',
-             linewidth=2, label="ent_right")
+plt.plot(times, source_psd_ent_right.mean(axis=0), 'g',
+         linewidth=2, label="ent_right")
 #    plt.plot(times, source_psd_ent_right.mean(axis=0) +
 #             source_psd_ent_right.std(axis=0), 'g--')
 #    plt.plot(times, source_psd_ent_right.mean(axis=0) -
 #             source_psd_ent_right.std(axis=0), 'g--')
 
-    plt.plot(times, source_psd_ctl_right.mean(axis=0), 'm',
-             linewidth=2, label="ctl_right")
+plt.plot(times, source_psd_ctl_right.mean(axis=0), 'm',
+         linewidth=2, label="ctl_right")
 #    plt.plot(times, source_psd_ctl_right.mean(axis=0) +
 #             source_psd_ctl_right.std(axis=0), 'y--')
 #    plt.plot(times, source_psd_ctl_right.mean(axis=0) -
 #             source_psd_ctl_right.std(axis=0), 'y--')
-    plt.legend()
-    plt.title(label.name)
+plt.legend()
+plt.title(label.name)
 
 
 def psds_to_DataFrame(psds, times, condition=None):
@@ -430,24 +428,24 @@ def psds_to_DataFrame(psds, times, condition=None):
 
 
 psds_ent_left_pas_2 = psds_to_DataFrame(source_psd_ent_left_pas_2, times,
-                                     "ent_l_pas_2")
+                                        "ent_l_pas_2")
 psds_ent_left_pas_3 = psds_to_DataFrame(source_psd_ent_left_pas_3, times,
-                                     "ent_l_pas_3")
+                                        "ent_l_pas_3")
 psds_ctl_left_pas_2 = psds_to_DataFrame(source_psd_ctl_left_pas_2, times,
-                                     " ctl_l_pas_2")
+                                        " ctl_l_pas_2")
 psds_ctl_left_pas_3 = psds_to_DataFrame(source_psd_ctl_left_pas_3, times,
-                                     "ctl_l_pas_3")                                     
-         
+                                        "ctl_l_pas_3")
+
 psds_ent_right_pas_2 = psds_to_DataFrame(source_psd_ent_right_pas_2, times,
-                                     "ent_r_pas_2")
+                                         "ent_r_pas_2")
 psds_ent_right_pas_3 = psds_to_DataFrame(source_psd_ent_right_pas_3, times,
-                                     "ent_r_pas_3")
+                                         "ent_r_pas_3")
 psds_ctl_right_pas_2 = psds_to_DataFrame(source_psd_ctl_right_pas_2, times,
-                                     " ctl_r_pas_2")
+                                         "ctl_r_pas_2")
 psds_ctl_right_pas_3 = psds_to_DataFrame(source_psd_ctl_right_pas_3, times,
-                                     "ctl_r_pas_3")                                     
-                                     
-                            
+                                         "ctl_r_pas_3")
+
+
 psds_ent_r = psds_to_DataFrame(source_psd_ent_right, times, "ent_r")
 psds_ctl_l = psds_to_DataFrame(source_psd_ctl_left, times, "ctl_l")
 psds_ctl_r = psds_to_DataFrame(source_psd_ctl_right, times, "ctl_r")
@@ -461,6 +459,6 @@ psds_all = pd.concat([psds_ent_left_pas_2,
                       psds_ctl_right_pas_2,
                       psds_ctl_right_pas_3])
 
-plt.figure()                      
+plt.figure()
 sns.tsplot(psds_all, time="times", unit="trial", condition="Condition",
            value="psd", err_style="ci_bars", interpolate=True)
