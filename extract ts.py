@@ -22,8 +22,6 @@ import os
 # import subprocess
 import glob
 
-cmd = "/usr/local/common/meeg-cfin/configurations/bin/submit_to_isis"
-
 # SETUP PATHS AND PREPARE RAW DATA
 hostname = socket.gethostname()
 
@@ -46,11 +44,6 @@ mne_folder = data_path + "minimum_norm/"
 subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
             "0012", "0013", "0014", "0015", "0016", "0017", "0020", "0021",
             "0022", "0023", "0024", "0025"]  # subject to run
-
-labels = mne.read_labels_from_annot('0004', parc='PALS_B12_Lobes',
-                                    # regexp="Bro",
-                                    subjects_dir=subjects_dir)
-labels_occ = [labels[9], labels[10], labels[9]+labels[10]]
 
 # Using the same inverse operator when inspecting single trials Vs. evoked
 snr = 1.0  # Standard assumption for average data but using it for single trial
@@ -101,7 +94,7 @@ for subject in subjects:
 
     for evk in evokeds:
         stc = apply_inverse(evk, inverse_operator, lambda2=lambda2,
-                            method=method)
+                            method=method, pick_ori="normal")
         exec("stc_%s_%s = stc" % (subject, evk.comment))
 
 
@@ -122,31 +115,94 @@ ent_left = [stc_0004_ent_left, stc_0005_ent_left, stc_0006_ent_left,
             stc_0021_ent_left, stc_0022_ent_left, stc_0023_ent_left,
             stc_0024_ent_left, stc_0025_ent_left]
 
+ctl_right = [stc_0004_ctl_right, stc_0005_ctl_right, stc_0006_ctl_right,
+             stc_0007_ctl_right, stc_0008_ctl_right, stc_0009_ctl_right,
+             stc_0010_ctl_right, stc_0011_ctl_right, stc_0012_ctl_right,
+             stc_0013_ctl_right, stc_0014_ctl_right, stc_0015_ctl_right,
+             stc_0016_ctl_right, stc_0017_ctl_right, stc_0020_ctl_right,
+             stc_0021_ctl_right, stc_0022_ctl_right, stc_0023_ctl_right,
+             stc_0024_ctl_right, stc_0025_ctl_right]
+
+
+ent_right = [stc_0004_ent_right, stc_0005_ent_right, stc_0006_ent_right,
+             stc_0007_ent_right, stc_0008_ent_right, stc_0009_ent_right,
+             stc_0010_ent_right, stc_0011_ent_right, stc_0012_ent_right,
+             stc_0013_ent_right, stc_0014_ent_right, stc_0015_ent_right,
+             stc_0016_ent_right, stc_0017_ent_right, stc_0020_ent_right,
+             stc_0021_ent_right, stc_0022_ent_right, stc_0023_ent_right,
+             stc_0024_ent_right, stc_0025_ent_right]
 
 lbl_ctl_left = []
 lbl_ent_left = []
+lbl_ctl_right = []
+lbl_ent_right = []
 
-for j, subject in enumerate(subjects[:2]):
-    src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subject)
-    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
+for j in range(len(subjects)):
+    src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subjects[j])
+    labels = mne.read_labels_from_annot(subjects[j], parc='PALS_B12_Lobes',
                                         # regexp="Bro",
                                         subjects_dir=subjects_dir)
-    labels_occ = [labels[9], labels[10], labels[9]+labels[10]]
+    labels_occ = [labels[9], labels[10]]
 
     lbl_ent_left.append(mne.extract_label_time_course(ent_left[j],
-                                                      labels=[labels[9]],
+                                                      labels=labels_occ,
                                                       src=src,
                                                       mode="pca_flip"))
 
     lbl_ctl_left.append(mne.extract_label_time_course(ctl_left[j],
-                                                      labels=[labels[9]],
+                                                      labels=labels_occ,
+                                                      src=src,
+                                                      mode="pca_flip"))
+
+    lbl_ent_right.append(mne.extract_label_time_course(ent_right[j],
+                                                      labels=labels_occ,
+                                                      src=src,
+                                                      mode="pca_flip"))
+
+    lbl_ctl_right.append(mne.extract_label_time_course(ctl_right[j],
+                                                      labels=labels_occ,
                                                       src=src,
                                                       mode="pca_flip"))
 
 
-    
-times = stc_ctl_left_pas_3.times
-#
+lbl_ent_left = np.squeeze(np.asarray(lbl_ent_left))
+lbl_ctl_left = np.squeeze(np.asarray(lbl_ctl_left))
+lbl_ent_right = np.squeeze(np.asarray(lbl_ent_right))
+lbl_ctl_right = np.squeeze(np.asarray(lbl_ctl_right))
+
+times = stc_0004_ent_left.times
+
+plt.figure()
+plt.plot(times, lbl_ent_left[:, 0, :].mean(axis=0),'b', label="ent_left")
+plt.plot(times, lbl_ent_right[:, 0, :].mean(axis=0),'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 0, :].mean(axis=0),'r', label="ctl_left")
+plt.plot(times, lbl_ctl_right[:, 0, :].mean(axis=0),'m', label="ctl_right")
+plt.legend()
+plt.title("label: %s" % labels_occ[0].name)
+plt.show()
+
+
+plt.figure()
+plt.plot(times, lbl_ent_left[:, 1, :].mean(axis=0),'b', label="ent_left")
+plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0),'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 1, :].mean(axis=0),'r', label="ctl_left")
+plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0),'m', label="ctl_right")
+plt.legend()
+plt.title("label: %s" % labels_occ[1].name)
+plt.show()
+
+
+plt.figure()
+plt.plot(times, lbl_ent_left[:, 1, :].T,'b', label="ent_left")
+#plt.plot(times, lbl_ent_right[:, 1, :].mean(axis=0),'g', label="ent_right")
+plt.plot(times, lbl_ctl_left[:, 1, :].T,'r', label="ctl_left")
+#plt.plot(times, lbl_ctl_right[:, 1, :].mean(axis=0),'m', label="ctl_right")
+plt.legend()
+plt.title("label: %s" % labels_occ[1].name)
+plt.show()
+
+
+
 #for label in labels_occ:
 #    plt.figure()
 #    plt.plot(times[:425], stc_ctl_left.in_label(label).data.mean(axis=0)[:425],
@@ -249,29 +305,49 @@ for cond in ["ent_left_pas_3", "ent_left_pas_2"]: #epochs.event_id.keys():
 
 
 bands = dict(alpha=[8, 12])
+snr = 1.0  # Standard assumption for average data but using it for single trial
+lambda2 = 1.0 / snr ** 2
+method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+
 
 BP_list = []
 
-for j, label in enumerate([labels[9], labels[10], labels[9]+labels[10]]):
-    for cond in epochs.event_id.keys():
-        stcs = source_band_induced_power(epochs[cond],
-                                         inverse_operator,
-                                         bands=bands,
-                                         label=label,
-                                         lambda2=lambda2,
-                                         method="dSPM",
-                                         baseline=(None, 0),
-                                         baseline_mode='zscore',
-                                         pca=True)
+for subject in subjects:
+    # Load data
+    fname_inv = mne_folder + "%s-inv.fif" % subject
+    epochs = mne.read_epochs(epochs_folder +
+                             "%s_filtered_ica_mc_tsss-epo.fif" % subject)
+    epochs.resample(500)
+    inverse_operator = read_inverse_operator(fname_inv)
 
-        if len(label.name.split()) > 2:
-            l_name = label.name.split()[0][5:][:-3] + "_lh_rh"
-        else:
-            l_name = label.name[5:][:-3] + "_" + label.name[-2:]
+    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
+                                        # regexp="Bro",
+                                        subjects_dir=subjects_dir)
 
-        BP_list.append("BP_%s_%s" % (cond, l_name))
+    for j, label in enumerate([labels[9], labels[10]]):
+        for cond in epochs.event_id.keys():
+            stcs = source_band_induced_power(epochs[cond],
+                                             inverse_operator,
+                                             bands=bands,
+                                             label=label,
+                                             lambda2=lambda2,
+                                             method=method,
+                                             n_cycles=4,
+                                             pick_ori="normal",
+                                             baseline=None,
+                                             # baseline_mode='percent',
+                                             pca=True)
 
-        exec("BP_%s_%s = stcs['alpha']" % (cond, l_name))
+            if len(label.name.split()) > 2:
+                l_name = label.name.split()[0][5:][:-3] + "_lh_rh"
+            else:
+                l_name = label.name[5:][:-3] + "_" + label.name[-2:]
+
+            BP_list.append("BP_%s_%s_%s" % (subject, cond, l_name))
+
+            exec("BP_%s_%s_%s = stcs['alpha']" % (subject, cond, l_name))
+            stcs["alpha"].save(tf_folder + "BP_%s_%s_%s_%s" 
+                               % (subject, cond, l_name, method))
 
 
 # difference waves plots
