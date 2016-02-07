@@ -6,7 +6,7 @@ This is a group of function to be used on TF data.
 """
 
 from my_settings import *
-# import numpy as np
+import numpy as np
 import mne
 from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator,
                               source_induced_power)
@@ -38,16 +38,16 @@ def calc_ALI(subject, show_plot=False):
     """
     ctl_left_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ctl_left_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ctl_left_OCCIPITAL_lh_dSPM" % (subject))
     ctl_right_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ctl_left_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ctl_left_OCCIPITAL_rh_dSPM" % (subject))
     ctl_left_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ctl_right_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ctl_right_OCCIPITAL_lh_dSPM" % (subject))
     ctl_right_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ctl_right_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ctl_right_OCCIPITAL_rh_dSPM" % (subject))
 
     ALI_left_cue_ctl = ((ctl_left_roi_left_cue.data.mean(axis=0) -
                          ctl_right_roi_left_cue.data.mean(axis=0)) /
@@ -61,16 +61,16 @@ def calc_ALI(subject, show_plot=False):
 
     ent_left_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_left_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ent_left_OCCIPITAL_lh_dSPM" % (subject))
     ent_right_roi_left_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_left_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ent_left_OCCIPITAL_rh_dSPM" % (subject))
     ent_left_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_right_OCCIPITAL_lh_MNE" % (subject))
+                                 "BP_%s_ent_right_OCCIPITAL_lh_dSPM" % (subject))
     ent_right_roi_right_cue =\
         mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_right_OCCIPITAL_rh_MNE" % (subject))
+                                 "BP_%s_ent_right_OCCIPITAL_rh_dSPM" % (subject))
 
     ALI_left_cue_ent = ((ent_left_roi_left_cue.data.mean(axis=0) -
                          ent_right_roi_left_cue.data.mean(axis=0)) /
@@ -97,7 +97,7 @@ def calc_ALI(subject, show_plot=False):
             ALI_left_cue_ent, ALI_right_cue_ent)
 
 
-def calc_power(subject, save=True):
+def calc_power(subject, epochs, condition=None, save=True):
     """Calculates induced power
     
     Does TF...
@@ -106,38 +106,52 @@ def calc_power(subject, save=True):
     ----------
     subject : string
         the subject number.
+    epochs : ???  # TODO give proper name for epochs file
+        the epochs to calculate power from.
+    condition : string
+        the condition to use if there several in the epochs file.
     save : bool
         whether for save the results. Defaults to True.
     """
     frequencies = np.arange(8, 13, 1)  # define frequencies of interest
     n_cycles = 4   # frequencies / 3.
-    epochs = epochs_folder + "%s_filtered_ica_mc_tsss-epo.fif" % subject
     inverse_operator = read_inverse_operator(mne_folder +
                                              "%s-inv.fif" % subject)
     labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
                                         # regexp="Bro",
                                         subjects_dir=subjects_dir)
+    label = labels[9]
     snr = 1.0  # Standard assumption for average data but using it for single trial
     lambda2 = 1.0 / snr ** 2
-    method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+    method = "MNE"  # use dSPM method (could also be MNE or sLORETA)
 
-    power, phase_lock = source_induced_power(epochs,
+    if condition:
+        epochs_test = epochs[condition]
+    else:
+        epochs_test = epochs    
+    
+    power, phase_lock = source_induced_power(epochs_test,
                                              inverse_operator,
                                              frequencies,
-                                             label=labels[9],
+                                             label=label,
                                              method=method,
                                              lambda2=lambda2,
                                              n_cycles=n_cycles,
                                              pick_ori="normal",
-                                             baseline=(None, 0),
-                                             baseline_mode='percent',
+                                             baseline=None,
+                                             baseline_mode='zscore',
                                              pca=True,
-                                             n_jobs=n_jobs)
+                                             n_jobs=2)
 
     if save:
-        print("will save soon")
+        np.save(tf_folder + "pow_%s_%s-%s_%s_%s_%s.npy" % (subject,
+                                                        frequencies[0],
+                                                        frequencies[-1],
+                                                        label.name, condition,
+                                                        method),
+                                                        power)
 
-    return power
+    return power, phase_lock
 
 
 
