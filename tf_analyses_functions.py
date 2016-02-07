@@ -8,6 +8,9 @@ This is a group of function to be used on TF data.
 from my_settings import *
 # import numpy as np
 import mne
+from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator,
+                              source_induced_power)
+
 import matplotlib.pyplot as plt
 
 
@@ -92,3 +95,49 @@ def calc_ALI(subject, show_plot=False):
 
     return (ALI_left_cue_ctl, ALI_right_cue_ctl,
             ALI_left_cue_ent, ALI_right_cue_ent)
+
+
+def calc_power(subject, save=True):
+    """Calculates induced power
+    
+    Does TF...
+
+    Parameters
+    ----------
+    subject : string
+        the subject number.
+    save : bool
+        whether for save the results. Defaults to True.
+    """
+    frequencies = np.arange(8, 13, 1)  # define frequencies of interest
+    n_cycles = 4   # frequencies / 3.
+    epochs = epochs_folder + "%s_filtered_ica_mc_tsss-epo.fif" % subject
+    inverse_operator = read_inverse_operator(mne_folder +
+                                             "%s-inv.fif" % subject)
+    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
+                                        # regexp="Bro",
+                                        subjects_dir=subjects_dir)
+    snr = 1.0  # Standard assumption for average data but using it for single trial
+    lambda2 = 1.0 / snr ** 2
+    method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+
+    power, phase_lock = source_induced_power(epochs,
+                                             inverse_operator,
+                                             frequencies,
+                                             label=labels[9],
+                                             method=method,
+                                             lambda2=lambda2,
+                                             n_cycles=n_cycles,
+                                             pick_ori="normal",
+                                             baseline=(None, 0),
+                                             baseline_mode='percent',
+                                             pca=True,
+                                             n_jobs=n_jobs)
+
+    if save:
+        print("will save soon")
+
+    return power
+
+
+
