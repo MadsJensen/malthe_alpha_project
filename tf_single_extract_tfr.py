@@ -27,12 +27,12 @@ def single_epoch_tfr(epochs, condition, inv, src,
     label : label
         ...
     """
+    frequencies = np.arange(8, 13, 1)
     stcs = apply_inverse_epochs(epochs, inv, lambda2=lambda2, method=method,
                                 label=None, pick_ori=None)
     time_series = [stc.extract_label_time_course(labels=label, src=src,
                                                  mode="pca_flip")[0]
                    for stc in stcs]
-    frequencies = np.arange(8, 13, 1)
 
     ts_signed = []
     for j in range(len(time_series)):
@@ -40,22 +40,19 @@ def single_epoch_tfr(epochs, condition, inv, src,
         tmp *= np.sign(tmp[np.argmax(np.abs(tmp))])
         ts_signed.append(tmp)
 
-    fs = []
-    for j in range(len(ts_signed)):
-        tmp = np.empty([1, ts_signed[j].shape[0]])
-        tmp[0, :] = ts_signed[j]
-        fs_tmp = cwt_morlet(tmp, 500, frequencies, n_cycles=4)
-        fs_ent.append(fs_tmp)
+    fs = cwt_morlet(np.asarray(ts_signed), epochs.info["sfreq"], frequencies, 
+                    use_fft=True, n_cycles=4)
+        
 
     return fs
 
-conditions = ["ctl_left"]
+conditions = ["ctl_left", "ent_left"]
 ctl_left_results = []
 ctl_right_results = []
 ent_left_results = []
 ent_right_results = []
 
-for subject in subjects[:1]:
+for subject in subjects:
     epochs = mne.read_epochs(epochs_folder +
                              "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
     inv = read_inverse_operator(mne_folder + "%s-inv.fif" % subject)    
