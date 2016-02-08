@@ -61,3 +61,16 @@ logs
 
 # emacs
 *~
+
+# matlab data files
+*.mat
+
+# random tmp files and PCL files
+*\#*
+*.pcl
+
+#dirs
+results
+data
+.directory
+.idea
