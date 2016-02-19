@@ -58,7 +58,7 @@ fwd = mne.make_forward_solution(raw_fname, trans=trans_fname,
                                 fname=mne_folder + "%s-fwd.fif" % subject,
                                 overwrite=True)
 
-fwd = mne.read_forward_solution(mne_folder + "%s-fwd.fif" % subject)
+# fwd = mne.read_forward_solution(mne_folder + "%s-fwd.fif" % subject)
 cov = mne.read_cov(mne_folder + "%s-cov.fif" % subject)
 epochs = mne.read_epochs(epochs_folder +
                          "%s_filtered_ica_mc_tsss-epo.fif" % subject,
@@ -83,27 +83,29 @@ method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
 # Load data
 fname_inv = mne_folder + "%s-inv.fif" % subject
+inv = mne.minimum_norm.read_inverse_operator(fname_inv)
 fname_evoked = epochs_folder + "%s_filtered_ica_mc_tsss-ave.fif" % subject
 evokeds = mne.read_evokeds(fname_evoked, baseline=(None, 0))
+src = mne.read_source_spaces(mne_folder + "%s-oct-6-src.fif" % subject)
 
 for evk in evokeds:
-    stc = apply_inverse(evk, inv, lambda2=lambda2,
+    stc = apply_inverse(evk, inv, lambda2=lambda2,  
                         method=method)
     exec("stc_%s_%s = stc" % (subject, evk.comment))
 
 
-src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subject)
+# src = mne.read_source_spaces(mne_folder + "%s-oct-6-src.fif" % subject)
 labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
                                     # regexp="Bro",
                                     subjects_dir=subjects_dir)
 labels_occ = [labels[9], labels[10], labels[9]+labels[10]]
 
-lbl_ent_left = mne.extract_label_time_course(stc_ent_left,
+lbl_ent_left = mne.extract_label_time_course(stc_0006_ent_left,
                                              labels=[labels[9]],
                                              src=src,
                                              mode="pca_flip")
 
-lbl_ctl_left = mne.extract_label_time_course(stc_ctl_left,
+lbl_ctl_left = mne.extract_label_time_course(stc_0006_ctl_left,
                                              labels=[labels[9]],
                                              src=src,
-                                             mode="pca_flip")
+                                                 mode="pca_flip")
