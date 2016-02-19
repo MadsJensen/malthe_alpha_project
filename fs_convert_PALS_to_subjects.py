@@ -12,12 +12,12 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
 for subject in subjects:
     convert_cmd_lh = "mri_surf2surf --srcsubject fsaverage " +  \
                      "--trgsubject %s --hemi lh " % subject + \
-                     "--sval-annot $SUBJECTS_DIR/fsaverage/label/lh.PALS_B12_Brodmann.annot " + \
-                     "--tval $SUBJECTS_DIR/%s/label/lh.PALS_B12_Brodmann.annot" % subject
+                     "--sval-annot $SUBJECTS_DIR/fsaverage/label/lh.PALS_B12_Visuotopic.annot " + \
+                     "--tval $SUBJECTS_DIR/%s/label/lh.PALS_B12_Visuotopic.annot" % subject
     convert_cmd_rh = "mri_surf2surf --srcsubject fsaverage " +  \
                      "--trgsubject %s --hemi rh " % subject + \
-                     "--sval-annot $SUBJECTS_DIR/fsaverage/label/rh.PALS_B12_Brodmann.annot " + \
-                     "--tval $SUBJECTS_DIR/%s/label/rh.PALS_B12_Brodmann.annot" % subject
+                     "--sval-annot $SUBJECTS_DIR/fsaverage/label/rh.PALS_B12_Visuotopic.annot " + \
+                     "--tval $SUBJECTS_DIR/%s/label/rh.PALS_B12_Visuotopic.annot" % subject
     
     subprocess.call([cmd, "1", convert_cmd_lh])
     subprocess.call([cmd, "1", convert_cmd_rh])
