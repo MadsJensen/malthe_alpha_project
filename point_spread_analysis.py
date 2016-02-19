@@ -20,13 +20,11 @@ subjects_dir = data_path + "fs_subjects_dir/"
 # change dir to save files the rigth place
 os.chdir(data_path)
 
-fname_fwd = data_path + "0001-fwd.fif"
-fname_inv = data_path + '0001-meg-oct-6-inv.fif'
-fname_epochs = data_path + '0001_p_03_filter_ds_ica-mc_tsss-epo.fif'
-fname_evoked = data_path + "0001_p_03_filter_ds_ica-mc_raw_tsss-ave.fif"
+fname_inv = mne_folder + '0004-inv.fif'
+fname_epochs = epochs_folder + "0004_filtered_ica_mc_tsss-epo.fif"
+fname_evoked = epochs_folder = "0004_filtered_ica_mc_tsss-ave.fif"
 
-
-labels = mne.read_labels_from_annot('0001', parc='PALS_B12_Lobes',
+labels = mne.read_labels_from_annot('0004', parc='PALS_B12_Lobes',
                                     # regexp="Bro",
                                     subjects_dir=subjects_dir)
 
