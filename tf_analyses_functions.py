@@ -15,15 +15,11 @@ import matplotlib.pyplot as plt
 
 
 def calc_ALI(subject, show_plot=False):
-    u"""Function calculates the alpha lateralization index (ALI).
+   """Function calculates the alpha lateralization index (ALI).
 
     The alpha lateralization index (ALI) is based on:
     Huurne, N. ter, Onnink, M., Kan, C., Franke, B., Buitelaar, J.,
-    & Jensen, O. (2013). Behavioral Consequences of Aberrant Alpha
-    Lateralization in Attention-Deficit/Hyperactivity Disorder.
-    Biological Psychiatry, 74(3), 227–233.
-    http://doi.org/10.1016/j.biopsych.2013.02.001
-
+    & Jensen, O. (2013).
     Parameters
     ----------
     subject : string
@@ -117,13 +113,13 @@ def calc_power(subject, epochs, condition=None, save=True):
     n_cycles = 4   # frequencies / 3.
     inverse_operator = read_inverse_operator(mne_folder +
                                              "%s-inv.fif" % subject)
-    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
-                                        # regexp="Bro",
+    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Brodmann',
+                                        regexp="Bro",
                                         subjects_dir=subjects_dir)
-    label = labels[9]
+    label = labels[6]  # Left BA17
     snr = 1.0  # Standard assumption for average data but using it for single trial
     lambda2 = 1.0 / snr ** 2
-    method = "MNE"  # use dSPM method (could also be MNE or sLORETA)
+    method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
     if condition:
         epochs_test = epochs[condition]
@@ -139,7 +135,7 @@ def calc_power(subject, epochs, condition=None, save=True):
                                              n_cycles=n_cycles,
                                              use_fft=True,
                                              pick_ori=None,
-                                             baseline=None,
+                                             baseline=(None, -0.3),
                                              baseline_mode='zscore',
                                              pca=True,
                                              n_jobs=2)
