@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 def calc_ALI(subject, show_plot=False):
-   """Function calculates the alpha lateralization index (ALI).
+    """Function calculates the alpha lateralization index (ALI).
 
     The alpha lateralization index (ALI) is based on:
     Huurne, N. ter, Onnink, M., Kan, C., Franke, B., Buitelaar, J.,
@@ -62,21 +62,21 @@ def calc_ALI(subject, show_plot=False):
                           ctl_right_roi_right_cue.data.mean(axis=0)))
 
     ent_left_roi_left_cue =\
-        mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_left_OCCIPITAL_lh_dSPM"
-                                 % (subject))
+      mne.read_source_estimate(tf_folder +
+                               "BP_%s_ent_left_OCCIPITAL_lh_dSPM"
+                               % (subject))
     ent_right_roi_left_cue =\
-        mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_left_OCCIPITAL_rh_dSPM"
-                                 % (subject))
+      mne.read_source_estimate(tf_folder +
+                               "BP_%s_ent_left_OCCIPITAL_rh_dSPM"
+                               % (subject))
     ent_left_roi_right_cue =\
-        mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_right_OCCIPITAL_lh_dSPM"
-                                 % (subject))
+      mne.read_source_estimate(tf_folder +
+                               "BP_%s_ent_right_OCCIPITAL_lh_dSPM"
+                               % (subject))
     ent_right_roi_right_cue =\
-        mne.read_source_estimate(tf_folder +
-                                 "BP_%s_ent_right_OCCIPITAL_rh_dSPM"
-                                 % (subject))
+      mne.read_source_estimate(tf_folder +
+                               "BP_%s_ent_right_OCCIPITAL_rh_dSPM"
+                               % (subject))
 
     ALI_left_cue_ent = ((ent_left_roi_left_cue.data.mean(axis=0) -
                          ent_right_roi_left_cue.data.mean(axis=0)) /
@@ -104,7 +104,7 @@ def calc_ALI(subject, show_plot=False):
 
 
 def calc_power(subject, epochs, condition=None, save=True):
-    """Calculates induced power
+    """Calculate induced power.
 
     Does TF...
 
@@ -127,7 +127,7 @@ def calc_power(subject, epochs, condition=None, save=True):
                                         regexp="Bro",
                                         subjects_dir=subjects_dir)
     label = labels[6]  # Left BA17
-    snr = 1.0  # Standard assumption for average data but using it for single trial
+    snr = 1.0
     lambda2 = 1.0 / snr ** 2
     method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
@@ -228,8 +228,7 @@ def calc_psd_epochs(epochs, plot=False):
 
 
 def single_trial_tf(epochs, n_cycles=4.):
-    """
-
+    """Something here.
 
     Parameters
     ----------
