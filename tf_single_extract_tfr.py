@@ -40,13 +40,12 @@ def single_epoch_tfr(epochs, condition, inv, src,
         tmp *= np.sign(tmp[np.argmax(np.abs(tmp))])
         ts_signed.append(tmp)
 
-    fs = cwt_morlet(np.asarray(ts_signed), epochs.info["sfreq"], frequencies, 
+    fs = cwt_morlet(np.asarray(ts_signed), epochs.info["sfreq"], frequencies,
                     use_fft=True, n_cycles=4)
-        
 
     return fs
 
-conditions = ["ctl_left", "ent_left"]
+conditions = ["ctl_left", "ent_left", "ent_right", "ctl_right"]
 ctl_left_results = []
 ctl_right_results = []
 ent_left_results = []
