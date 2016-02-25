@@ -18,4 +18,5 @@ for subject in subjects:
     epochs = mne.read_epochs(epochs_folder +
                              "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
     for condition in conditions:
-        power, itc = calc_power(epochs, condition=condition, save=True)
+        power, itc = calc_power(subject, epochs, condition=condition,
+                                save=True)
