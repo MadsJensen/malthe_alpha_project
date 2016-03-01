@@ -227,14 +227,14 @@ def calc_psd_epochs(epochs, plot=False):
     return psds_vol, psds_inv, freqs
 
 
-def single_trial_tf(epochs, n_cycles=4.):
+def single_trial_tf(epochs, frequencies, n_cycles):
     """Something here.
 
     Parameters
     ----------
     epochs : Epochs object
         The epochs to calculate TF analysis on.
-    n_cycles : int
+    n_cycles : int or numpy array
         The number of cycles for the Morlet wavelets.
 
     Returns
@@ -242,7 +242,6 @@ def single_trial_tf(epochs, n_cycles=4.):
     results : numpy array
     """
     results = []
-    frequencies = np.arange(6., 30., 1.)
 
     for j in range(len(epochs)):
         tfr = cwt_morlet(epochs.get_data()[j],
@@ -305,3 +304,44 @@ def calc_wavelet_duration(freqs, n_cycles):
         result[i] = (float(n_cycles[i]) / freqs[i] / np.pi) * 1000
 
     return result
+
+
+def single_epoch_tf_source(epochs, condition, inv, src,
+                           label):
+    """Calculates single trail power
+
+    Parameter
+    ---------
+    epochs : ???
+        The subject number to use.
+    condition : string
+        ...
+    inv = inverse_operator
+        ...
+    src : source space
+        ...
+    label : label
+        ...
+    """
+    snr = 1.0
+    lambda2 = 1.0 / snr ** 2
+    method = "MNE"  # use dSPM method (could also be MNE or sLORETA)
+
+    frequencies = np.arange(8, 13, 1)
+    stcs = apply_inverse_epochs(epochs, inv, lambda2=lambda2, method=method,
+                                label=None, pick_ori=None)
+    time_series = [stc.extract_label_time_course(labels=label, src=src,
+                                                 mode="pca_flip")[0]
+                   for stc in stcs]
+
+    ts_signed = []
+    for j in range(len(time_series)):
+        tmp = time_series[j]
+        tmp *= np.sign(tmp[np.argmax(np.abs(tmp))])
+        ts_signed.append(tmp)
+
+    tfr = cwt_morlet(np.asarray(ts_signed), epochs.info["sfreq"], frequencies,
+                     use_fft=True, n_cycles=4)
+
+    return tfr
+
