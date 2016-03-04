@@ -103,8 +103,8 @@ def calc_ALI(subject, show_plot=False):
             ALI_left_cue_ent, ALI_right_cue_ent)
 
 
-def calc_power(subject, epochs, condition=None, save=True):
-    """Calculate induced power.
+def calc_power(subject, epochs, condition=None, label=None, save=True):
+    """Calculate induced power and ITC.
 
     Does TF...
 
@@ -114,6 +114,8 @@ def calc_power(subject, epochs, condition=None, save=True):
         the subject number.
     epochs : ???  # TODO give proper name for epochs file
         the epochs to calculate power from.
+    label : string
+        restrict to a label.
     condition : string
         the condition to use if there several in the epochs file.
     save : bool
@@ -123,10 +125,6 @@ def calc_power(subject, epochs, condition=None, save=True):
     n_cycles = frequencies / 3.
     inverse_operator = read_inverse_operator(mne_folder +
                                              "%s-inv.fif" % subject)
-    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Brodmann',
-                                        regexp="Bro",
-                                        subjects_dir=subjects_dir)
-    label = labels[6]  # Left BA17
     snr = 1.0
     lambda2 = 1.0 / snr ** 2
     method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
@@ -306,16 +304,13 @@ def calc_wavelet_duration(freqs, n_cycles):
     return result
 
 
-def single_epoch_tf_source(epochs, condition, inv, src,
-                           label):
+def single_epoch_tf_source(epochs, inv, src, label):
     """Calculates single trail power
 
     Parameter
     ---------
     epochs : ???
         The subject number to use.
-    condition : string
-        ...
     inv = inverse_operator
         ...
     src : source space
@@ -325,7 +320,7 @@ def single_epoch_tf_source(epochs, condition, inv, src,
     """
     snr = 1.0
     lambda2 = 1.0 / snr ** 2
-    method = "MNE"  # use dSPM method (could also be MNE or sLORETA)
+    method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
     frequencies = np.arange(8, 13, 1)
     stcs = apply_inverse_epochs(epochs, inv, lambda2=lambda2, method=method,
