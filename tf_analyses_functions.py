@@ -162,7 +162,7 @@ def calc_power(subject, epochs, condition=None, label=None, save=True):
                                                            label.name,
                                                            condition,
                                                            method),
-                power)
+                phase_lock)
 
     return power, phase_lock
 
