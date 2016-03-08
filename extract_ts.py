@@ -5,22 +5,8 @@ Created on Mon Aug 31 10:17:09 2015
 @author: mje
 """
 import mne
-from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator,
-                              source_induced_power, source_band_induced_power,
-                              compute_source_psd_epochs, apply_inverse)
-
-import socket
+from mne.minimum_norm import (apply_inverse_epochs, read_inverse_operator)
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-# import seaborn as sns
-
-import socket
-import mne
-from mne.minimum_norm import make_inverse_operator
-import os
-# import subprocess
-import glob
 
 from my_settings import *
 
