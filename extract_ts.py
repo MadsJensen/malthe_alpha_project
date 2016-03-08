@@ -15,72 +15,10 @@ from my_settings import *
 snr = 1.0  # Standard assumption for average data but using it for single trial
 lambda2 = 1.0 / snr ** 2
 method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
+freqs = np.arange(8, 13, 1)
+n_cycle = freqs / 3.
 
-
-for subject in subjects[:1]:
-    # Load data
-    inverse_operator = read_inverse_operator(mne_folder +
-                                             "%s-inv.fif" % subject)
-    epochs = mne.read_epochs(epochs_folder +
-                             "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
-    epochs.resample(250, n_jobs=4)
-
-    for cond in epochs.event_id.keys():
-        stcs = apply_inverse_epochs(epochs[cond], inverse_operator, lambda2,
-                                    method, pick_ori="normal")
-        exec("stcs_%s = stcs" % cond)
-
-
-# morhping
-
-
-
-lbl_ctl_left = []
-lbl_ent_left = []
-lbl_ctl_right = []
-lbl_ent_right = []
-
-
-src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % "0004")
-labels = mne.read_labels_from_annot("0004", parc='PALS_B12_Brodmann',
-                                    regexp="Bro",
-                                    subjects_dir=subjects_dir)
-labels_occ = [labels[6]]
-
-
-lbl_left = []
-
-for j in range(len(stcs_ent_left)):
-    lbl_left.append(mne.extract_label_time_course(stcs_ent_left[j],
-                                                      labels=labels_occ,
-                                                      src=src,
-                                                      mode="mean_flip"))
-
-for j in range(len(stcs_ctl_left)):
-    lbl_left.append(mne.extract_label_time_course(stcs_ctl_left[j],
-                                                      labels=labels_occ,
-                                                      src=src,
-                                                      mode="mean_flip"))
-
-for j in range(len(stcs_ent_right)):
-    lbl_left.append(mne.extract_label_time_course(stcs_ent_right[j],
-                                                       labels=labels_occ,
-                                                       src=src,
-                                                       mode="mean_flip"))
-
-for j in range(len(stcs_ctl_right)):
-    lbl_ctl_right.append(mne.extract_label_time_course(stcs_ctl_right[j],
-                                                       labels=labels_occ,
-                                                       src=src,
-                                                       mode="mean_flip"))
-
-
-lbl_ent_left = np.squeeze(np.asarray(lbl_ent_left))
-lbl_ctl_left = np.squeeze(np.asarray(lbl_ctl_left))
-lbl_ent_right = np.squeeze(np.asarray(lbl_ent_right))
-lbl_ctl_right = np.squeeze(np.asarray(lbl_ctl_right))
-
-
+conditions = ["ent_left", "ctl_left", "ent_right", "ctl_right"]
 
 def ITC_over_trials(data, faverage=True):
     """Calculate the ITC over time.
@@ -111,19 +49,40 @@ def ITC_over_trials(data, faverage=True):
     return result
 
 
-lbl_left = np.squeeze(np.asarray(lbl_left))
+for condition in conditions:
+    for subject in subjects[:1]:
+        itc_res = []
+        # Load data
+        labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Brodmann',
+                                            regexp="Bro",
+                                            subjects_dir=subjects_dir)
+        labels_occ = [labels[6]]
 
-freqs = np.arange(8, 13, 1)
-n_cycle = freqs / 3.
+        inverse_operator = read_inverse_operator(mne_folder +
+                                                 "%s-inv.fif" % subject)
+        src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subject)
 
-tfr_ent_left  = cwt_morlet(lbl_left, epochs.info["sfreq"], freqs,
-                           use_fft=True, n_cycles=n_cycle)
+        epochs = mne.read_epochs(epochs_folder +
+                                 "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
+        epochs.resample(250, n_jobs=1)
 
-tfr_clt_left  = cwt_morlet(lbl_left, epochs.info["sfreq"], freqs,
-                           use_fft=True, n_cycles=n_cycle)
+        stcs = apply_inverse_epochs(epochs[condition], inverse_operator,
+                                    lambda2,
+                                    method, pick_ori="normal")
 
-tfr_ent_right  = cwt_morlet(lbl_left, epochs.info["sfreq"], freqs,
-                            use_fft=True, n_cycles=n_cycle)
+        label_ts = []
+        for j in range(len(stcs)):
+            label_ts.append(mne.extract_label_time_course(stcs[j],
+                                                          labels=labels_occ,
+                                                          src=src,
+                                                          mode="mean_flip"))
 
-tfr_clt_right = cwt_morlet(lbl_ctl_right, epochs.info["sfreq"], freqs,
-                           use_fft=True, n_cycles=n_cycle)
+        label_ts = np.squeeze(np.asarray(label_ts))
+
+        tfr = cwt_morlet(label_ts, epochs.info["sfreq"], freqs,
+                         use_fft=True, n_cycles=n_cycle)
+
+        itc_res.append(ITC_over_trials(tfr))
+
+    itc_res = np.asarray(itc_res)
+    np.save(tf_folder + "itc_%S.npy" % condition, itc_res)
