@@ -30,13 +30,13 @@ lambda2 = 1.0 / snr ** 2
 method = "dSPM"  # use dSPM method (could also be MNE or sLORETA)
 
 
-for subject in subjects:
+for subject in subjects[:1]:
     # Load data
     inverse_operator = read_inverse_operator(mne_folder +
                                              "%s-inv.fif" % subject)
     epochs = mne.read_epochs(epochs_folder +
-                             "%s_filtered_ica_mc_tsss-epo.fif" % subject)
-
+                             "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
+    epochs.resample(250, n_jobs=4)
 
     for cond in epochs.event_id.keys():
         stcs = apply_inverse_epochs(epochs[cond], inverse_operator, lambda2,
@@ -49,32 +49,33 @@ lbl_ent_left = []
 lbl_ctl_right = []
 lbl_ent_right = []
 
-for j in range(len(subjects)):
-    src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subjects[j])
-    labels = mne.read_labels_from_annot(subjects[j], parc='PALS_B12_Brodmann',
-                                        regexp="Bro",
-                                        subjects_dir=subjects_dir)
-    labels_occ = [labels[6], labels[7]]
 
-    lbl_ent_left.append(mne.extract_label_time_course(ent_left[j],
+src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subjects[j])
+labels = mne.read_labels_from_annot(subjects[0], parc='PALS_B12_Brodmann',
+                                    regexp="Bro",
+                                    subjects_dir=subjects_dir)
+labels_occ = [labels[6]]
+
+for j in range(len(stcs_ent_left)):
+    lbl_ent_left.append(mne.extract_label_time_course(stcs_ent_left[j],
                                                       labels=labels_occ,
                                                       src=src,
                                                       mode="pca_flip"))
 
-    lbl_ctl_left.append(mne.extract_label_time_course(ctl_left[j],
-                                                      labels=labels_occ,
-                                                      src=src,
-                                                      mode="pca_flip"))
+lbl_ctl_left.append(mne.extract_label_time_course(stcs_ctl_left[j],
+                                                  labels=labels_occ,
+                                                  src=src,
+                                                  mode="pca_flip"))
 
-    lbl_ent_right.append(mne.extract_label_time_course(ent_right[j],
-                                                       labels=labels_occ,
-                                                       src=src,
-                                                       mode="pca_flip"))
+lbl_ent_right.append(mne.extract_label_time_course(ent_right[j],
+                                                   labels=labels_occ,
+                                                   src=src,
+                                                   mode="pca_flip"))
 
-    lbl_ctl_right.append(mne.extract_label_time_course(ctl_right[j],
-                                                       labels=labels_occ,
-                                                       src=src,
-                                                       mode="pca_flip"))
+lbl_ctl_right.append(mne.extract_label_time_course(ctl_right[j],
+                                                   labels=labels_occ,
+                                                   src=src,
+                                                   mode="pca_flip"))
 
 
 lbl_ent_left = np.squeeze(np.asarray(lbl_ent_left))
