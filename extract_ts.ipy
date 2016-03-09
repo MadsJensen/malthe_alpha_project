@@ -50,13 +50,13 @@ def ITC_over_trials(data, faverage=True):
 
 
 for condition in conditions:
-    for subject in subjects[:1]:
-        itc_res = []
+    itc_res = []
+    for subject in subjects:       
         # Load data
         labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Brodmann',
                                             regexp="Bro",
                                             subjects_dir=subjects_dir)
-        labels_occ = [labels[6]]
+        labels_occ = [labels[7]]
 
         inverse_operator = read_inverse_operator(mne_folder +
                                                  "%s-inv.fif" % subject)
@@ -64,7 +64,7 @@ for condition in conditions:
 
         epochs = mne.read_epochs(epochs_folder +
                                  "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
-        epochs.resample(250, n_jobs=1)
+        epochs.resample(250, n_jobs=4)
 
         stcs = apply_inverse_epochs(epochs[condition], inverse_operator,
                                     lambda2,
@@ -83,6 +83,9 @@ for condition in conditions:
                          use_fft=True, n_cycles=n_cycle)
 
         itc_res.append(ITC_over_trials(tfr))
-
+        %xdel epochs
+        %xdel stcs
+    
     itc_res = np.asarray(itc_res)
-    np.save(tf_folder + "itc_%S.npy" % condition, itc_res)
+    np.save(tf_folder + "itc_%s_ba17_right.npy" % condition, itc_res)
+    
