@@ -86,8 +86,9 @@ for subject in subjects:
             tfr = cwt_morlet(label_ts, epochs.info["sfreq"], freqs,
                              use_fft=True, n_cycles=n_cycle)
 
-            np.save(tf_folder + "%_%s_%s-tfr.np" % (subject, condition,
-                                                    label.name))
+            np.save(tf_folder + "%s_%s_%s-tfr" % (subject, condition,
+                                                    label.name),
+                    tfr)
 
         del stcs
         del tfr
