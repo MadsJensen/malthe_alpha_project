@@ -67,17 +67,17 @@ for subject in subjects:
     # epochs.resample(250, n_jobs=4)
 
     for condition in conditions:
-        for label in labels_occ:
-            stcs = apply_inverse_epochs(epochs[condition],
-                                        inverse_operator,
-                                        lambda2,
-                                        method,
-                                        pick_ori="normal")
+        stcs = apply_inverse_epochs(epochs[condition],
+                                    inverse_operator,
+                                    lambda2,
+                                    method,
+                                    pick_ori="normal")
 
+        for label in labels_occ:
             label_ts = []
             for j in range(len(stcs)):
                 label_ts.append(mne.extract_label_time_course(stcs[j],
-                                                              labels=labels_occ,
+                                                              labels=label,
                                                               src=src,
                                                               mode="mean_flip"))
 
@@ -87,7 +87,7 @@ for subject in subjects:
                              use_fft=True, n_cycles=n_cycle)
 
             np.save(tf_folder + "%_%s_%s-tfr.np" % (subject, condition,
-                                                  label.name))
+                                                    label.name))
 
         del stcs
         del tfr
