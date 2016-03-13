@@ -1,5 +1,6 @@
 import os
 
+import mne
 import numpy as np
 import pandas as pd
 
@@ -176,3 +177,30 @@ X = np.vstack([ent_left_lh, ent_left_rh, ent_right_lh, ent_right_rh,
 
 y = np.concatenate([[0]*20, [1]*20, [2]*20, [3]*20,
                     [4]*20, [5]*20, [6]*20, [7]*20])
+
+
+def make_log_file(data):
+    events = mne.read_events(data)
+    columns_keys = ["condition_type", "condition_side", "target_side",
+                    "target_type", "response", "PAS", "correct"]
+    df = pd.DataFrame(columns=columns_keys)
+    cond_dict = {1: ["ent", "left"], 2: ["ent", "right"],
+                 4: ["con", "left"], 8: ["con", "right"]}
+    target_dict = {16: ["left", "+"], 32: ["right", "+"],
+                   64: ["left", "X"], 128: ["right", "X"]}
+    response_dict = {9: "+", 10: "X"}
+    pas_dict = {21: 1, 22: 2, 23: 3, 24: 4}
+    idx = np.arange(0, len(events), 4)
+    for i in idx:
+        row = pd.DataFrame([{"condition_type": cond_dict[events[i][2]][0],
+                             "condition_side": cond_dict[events[i][2]][1],
+                             "target_side": target_dict[events[i+1][2]][0],
+                             "target_type": target_dict[events[i+1][2]][1],
+                             "response": response_dict[events[i+2][2]],
+                             "PAS": pas_dict[events[i+3][2]]}])
+        df = df.append(row, ignore_index=True)
+
+    df["correct"] = df["response"] == df["target_type"]
+
+    return df
+
