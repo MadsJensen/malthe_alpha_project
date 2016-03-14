@@ -21,6 +21,7 @@ maxfiltered_folder = data_path + "maxfiltered_data/"
 epochs_folder = data_path + "epoched_data/"
 tf_folder = data_path + "tf_data/"
 mne_folder = data_path + "minimum_norm/"
+log_folder = data_path + "log_files/"
 
 
 subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
