@@ -68,5 +68,5 @@ picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=False,
 epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
                     baseline=(None, -0.2), reject=None, preload=False)
                     
-epochs.save(epochs_folder + "%s_test-epo.fif" % subject)
+epochs.save(epochs_folder + "%s_trial_start-epo.fif" % subject)
 
