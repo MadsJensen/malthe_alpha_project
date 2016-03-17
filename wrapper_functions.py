@@ -24,7 +24,6 @@ else:
 
 # CHANGE DIR TO SAVE FILES THE RIGTH PLACE
 os.chdir(script_path)
-mne_folder = data_path + "minimum_norm/"
 
 
 subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
@@ -32,6 +31,6 @@ subjects = ["0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011",
             "0022", "0023", "0024", "0025"]  # subject to run
 
 
-for subject in subjects[2:]:
-    submit_cmd = "python submit_calc_cov.py %s" % subject
-    subprocess.call([cmd, "1", submit_cmd])
+for subject in subjects:
+    submit_cmd = "python epoching_from_pd.py %s" % subject
+    subprocess.call([cmd, "4", submit_cmd])
