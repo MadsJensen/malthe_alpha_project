@@ -6,12 +6,13 @@ Script that load the DataFrame and do epoch sorting based on that.
 
 import mne
 import pandas as pd
+import numpy as np
 import sys
 from mne.io import Raw
 
 from my_settings import *
 
-tmin, tmax = -0.5, 2  #Epoch time
+tmin, tmax = -0.5, 1.5  #Epoch time
 
 subject = sys.argv[1]
 
@@ -28,14 +29,11 @@ event_id = {"all_trials": 99}
 
 #   Setup for reading the raw data
 events = mne.find_events(raw, min_duration=0.015)
-events = mne.event.merge_events(events, [1, 2, 4, 8], 99, replace_events=False)
+events = mne.event.merge_events(events, [1, 2, 4, 8], 99, replace_events=True)
 
-picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=False,
-                       include=include, exclude='bads')
-# Read epochs
-epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
-                    baseline=(None, 0), reject=None, preload=True)
 
+event_id  ={}
+epoch_ids = []
 for i, row in log_tmp.iterrows():
     if row.condition_type == "ctl":
         epoch_name = "ctl"
@@ -53,17 +51,22 @@ for i, row in log_tmp.iterrows():
 
     epoch_name = epoch_name + "/" + str(row.PAS)
     epoch_id = epoch_id + str(row.PAS)
-
-    tmp_epoch = epochs[i].copy()
-    tmp_epoch.event_id = {epoch_name: int(epoch_id)}
-    tmp_epoch.events = mne.event.merge_events(tmp_epoch.events, [99],
-                                              int(epoch_id),
-                                              replace_events=True)
-
-    if i == 0:
-        all_epochs = tmp_epoch
-    else:
-        all_epochs = mne.concatenate_epochs([all_epochs, tmp_epoch])
+    epoch_ids.append(int(epoch_id))
+    
+    if epoch_name is not event_id:
+        event_id[str(epoch_name)] = int(epoch_id)
 
 
-all_epochs.save(epochs_folder + "%-epo.fif" % subject, overwrite=True)
+idx = np.arange(0, len(events), 4)
+for i in range(len(events[idx])):
+    events[idx[i]][2] = epoch_ids[i]
+
+
+picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=False,
+                       include=include, exclude='bads')
+# Read epochs
+epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
+                    baseline=(None, -0.2), reject=None, preload=False)
+                    
+epochs.save(epochs_folder + "%s_test-epo.fif" % subject)
+
