@@ -24,6 +24,7 @@ fig = epochs.plot_drop_log(subject=subject, show=False)
 fig.savefig(epochs_folder + "pics/%s_drop_log.png" % subject)
 
 # Make noise cov
-cov = compute_covariance(epochs, tmin=None, tmax=-0.2, method="shrunk")
+cov = compute_covariance(epochs, tmin=None, tmax=-0.2,
+                         method="factor_analysis")
 mne.write_cov(mne_folder + "%s-cov.fif" % subject, cov)
 
