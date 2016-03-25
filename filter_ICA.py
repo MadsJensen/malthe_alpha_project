@@ -15,7 +15,6 @@ from mne.preprocessing import ICA, create_ecg_epochs, create_eog_epochs
 
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 # Setup paths and prepare raw data
 hostname = socket.gethostname()
