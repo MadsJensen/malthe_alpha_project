@@ -17,12 +17,12 @@ for subject in subjects[:1]:
                              "%s_ds_filtered_ica_mc_tsss-epo.fif" % subject)
     inv = read_inverse_operator(mne_folder + "%s-inv.fif" % subject)
     src = mne.read_source_spaces(mne_folder + "%s-oct6-src.fif" % subject)
-    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Lobes',
-                                        # regexp="Bro",
+    labels = mne.read_labels_from_annot(subject, parc='PALS_B12_Brodmann',
+                                        regexp="Bro",
                                         subjects_dir=subjects_dir)
     for condition in conditions:
         res = single_epoch_tf_source(epochs[condition], condition,
-                                     inv, src, label=[labels[9]])
+                                     inv, src, label=[labels[6]])
 
         if condition == "ctl_left":
             ctl_left_results.append(res)
