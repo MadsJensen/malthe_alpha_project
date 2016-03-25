@@ -166,7 +166,7 @@ subjects.sort()
 subjects = subjects[-3:]
 
 
-for subject in subjects:        
+for subject in subjects:
     filter_data(subject)
 
 
