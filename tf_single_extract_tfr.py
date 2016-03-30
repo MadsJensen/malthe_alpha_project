@@ -5,7 +5,6 @@ from mne.minimum_norm import read_inverse_operator
 from tf_analyses_functions import single_epoch_tf_source
 
 
-
 conditions = ["ctl_left", "ent_left", "ent_right", "ctl_right"]
 ctl_left_results = []
 ctl_right_results = []
@@ -39,7 +38,7 @@ for subject in subjects[:1]:
                     ctl_left_results)
         elif condition == "ctl_right":
             np.save(tf_folder + "%s_%s_ba-17_left.npy" % (subject, condition),
-            ctl_right_results)
+                    ctl_right_results)
         elif condition == "ent_left":
             np.save(tf_folder + "%s_%s_ba-17_left.npy" % (subject, condition),
                     ent_left_results)
