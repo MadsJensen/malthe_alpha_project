@@ -12,7 +12,7 @@ from mne.io import Raw
 
 from my_settings import *
 
-tmin, tmax = -0.5, 1.5  #Epoch time
+tmin, tmax = -0.5, 1.5  # Epoch time
 
 subject = sys.argv[1]
 
@@ -32,7 +32,7 @@ events = mne.find_events(raw, min_duration=0.015)
 events = mne.event.merge_events(events, [1, 2, 4, 8], 99, replace_events=True)
 
 
-event_id  ={}
+event_id = {}
 epoch_ids = []
 for i, row in log_tmp.iterrows():
     if row.condition_type == "ctl":
@@ -49,10 +49,24 @@ for i, row in log_tmp.iterrows():
         epoch_name = epoch_name + "/" + "right"
         epoch_id = epoch_id + "0"
 
+    if row.congruent is True:
+        epoch_name = epoch_name + "/" + "cong"
+        epoch_id = epoch_id + "1"
+    elif row.congruent is False:
+        epoch_name = epoch_name + "/" + "incong"
+        epoch_id = epoch_id + "0"
+
+    if row.correct is True:
+        epoch_name = epoch_name + "/" + "correct"
+        epoch_id = epoch_id + "1"
+    elif row.correct is False:
+        epoch_name = epoch_name + "/" + "incorrect"
+        epoch_id = epoch_id + "0"
+
     epoch_name = epoch_name + "/" + str(row.PAS)
     epoch_id = epoch_id + str(row.PAS)
     epoch_ids.append(int(epoch_id))
-    
+
     if epoch_name is not event_id:
         event_id[str(epoch_name)] = int(epoch_id)
 
@@ -67,6 +81,5 @@ picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=False, eog=False,
 # Read epochs
 epochs = mne.Epochs(raw, events, event_id, tmin, tmax, picks=picks,
                     baseline=(None, -0.2), reject=None, preload=False)
-                    
-epochs.save(epochs_folder + "%s_trial_start-epo.fif" % subject)
 
+epochs.save(epochs_folder + "%s_trial_start-epo.fif" % subject)
