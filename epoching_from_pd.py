@@ -63,6 +63,13 @@ for i, row in log_tmp.iterrows():
         epoch_name = epoch_name + "/" + "incorrect"
         epoch_id = epoch_id + "0"
 
+    if row.in_phase is True:
+        epoch_name = epoch_name + "/" + "in_phase"
+        epoch_id = epoch_id + "1"
+    elif row.in_phase is False:
+        epoch_name = epoch_name + "/" + "out_phase"
+        epoch_id = epoch_id + "0"
+
     epoch_name = epoch_name + "/" + str(row.PAS)
     epoch_id = epoch_id + str(row.PAS)
     epoch_ids.append(int(epoch_id))
