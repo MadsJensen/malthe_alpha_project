@@ -87,7 +87,7 @@ for subject in subjects:
                              use_fft=True, n_cycles=n_cycle)
 
             np.save(tf_folder + "%s_%s_%s_MNE-tfr" % (subject, condition,
-                                                    label.name),
+                                                      label.name),
                     tfr)
 
         del stcs
